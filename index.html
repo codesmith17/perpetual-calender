@@ -10,7 +10,7 @@
     <title>AATHVAN Puzzle Solver 📅</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Fredoka+One&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -167,6 +167,7 @@
             gap: 4px;
             background: linear-gradient(145deg, #d8bd9f 0%, #c4a575 50%, #b89968 100%);
             padding: 20px;
+            padding-bottom: 70px;
             border-radius: 20px;
             box-shadow: 
                 0 15px 40px rgba(139, 111, 71, 0.4),
@@ -180,22 +181,22 @@
         .board::after {
             content: 'AATHVAN';
             position: absolute;
-            bottom: 8px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 48px;
-            font-weight: 900;
-            font-family: 'Poppins', 'Arial Black', sans-serif;
-            background: linear-gradient(135deg, #6b5444 0%, #8b6f47 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 400;
+            font-family: 'Fredoka One', 'Arial Black', sans-serif;
+            color: #6b5444;
             letter-spacing: 6px;
             text-shadow: 
-                2px 2px 4px rgba(0,0,0,0.2);
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+                inset 2px 2px 4px rgba(0,0,0,0.4),
+                1px 1px 0px rgba(255,255,255,0.3),
+                2px 2px 3px rgba(0,0,0,0.5);
+            filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4));
             width: 90%;
             text-align: center;
+            -webkit-text-stroke: 1px rgba(107, 84, 68, 0.3);
         }
 
         .cell {
@@ -371,11 +372,22 @@
             padding: 8px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
         }
 
         .legend-piece:hover {
             transform: scale(1.15);
             background: rgba(255, 255, 255, 0.6);
+        }
+
+        .piece-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: #5d4e37;
+            font-family: 'Poppins', sans-serif;
         }
 
         .mini-shape {
@@ -516,12 +528,13 @@
 
             .board {
                 padding: 12px;
+                padding-bottom: 55px;
                 border-radius: 16px;
             }
 
             .board::after {
                 font-size: 32px;
-                bottom: 6px;
+                bottom: 8px;
                 letter-spacing: 4px;
             }
 
@@ -563,13 +576,14 @@
 
             .board {
                 padding: 10px;
+                padding-bottom: 45px;
                 border-radius: 14px;
             }
 
             .board::after {
                 font-size: 24px;
                 letter-spacing: 3px;
-                bottom: 4px;
+                bottom: 6px;
             }
 
             select, button {
@@ -647,6 +661,7 @@
                 <div class="mini-shape shape-target">
                     <div class="mini-cell"></div>
                 </div>
+                <span class="piece-number">📅</span>
             </div>
             <div class="legend-piece" data-piece="1">
                 <div class="mini-shape shape-1">
@@ -656,6 +671,7 @@
                     <div class="mini-cell" style="grid-area: 3/1/4/2;"></div>
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                 </div>
+                <span class="piece-number">1</span>
             </div>
             <div class="legend-piece" data-piece="2">
                 <div class="mini-shape shape-2">
@@ -665,6 +681,7 @@
                     <div class="mini-cell" style="grid-area: 2/2/3/3;"></div>
                     <div class="mini-cell" style="grid-area: 2/3/3/4;"></div>
                 </div>
+                <span class="piece-number">2</span>
             </div>
             <div class="legend-piece" data-piece="3">
                 <div class="mini-shape shape-3">
@@ -674,6 +691,7 @@
                     <div class="mini-cell" style="grid-area: 3/1/4/2;"></div>
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                 </div>
+                <span class="piece-number">3</span>
             </div>
             <div class="legend-piece" data-piece="4">
                 <div class="mini-shape shape-4">
@@ -683,6 +701,7 @@
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                     <div class="mini-cell" style="grid-area: 4/2/5/3;"></div>
                 </div>
+                <span class="piece-number">4</span>
             </div>
             <div class="legend-piece" data-piece="5">
                 <div class="mini-shape shape-5">
@@ -692,6 +711,7 @@
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                     <div class="mini-cell" style="grid-area: 3/3/4/4;"></div>
                 </div>
+                <span class="piece-number">5</span>
             </div>
             <div class="legend-piece" data-piece="6">
                 <div class="mini-shape shape-6">
@@ -701,6 +721,7 @@
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                     <div class="mini-cell" style="grid-area: 4/2/5/3;"></div>
                 </div>
+                <span class="piece-number">6</span>
             </div>
             <div class="legend-piece" data-piece="7">
                 <div class="mini-shape shape-7">
@@ -710,6 +731,7 @@
                     <div class="mini-cell" style="grid-area: 4/1/5/2;"></div>
                     <div class="mini-cell" style="grid-area: 4/2/5/3;"></div>
                 </div>
+                <span class="piece-number">7</span>
             </div>
             <div class="legend-piece" data-piece="8">
                 <div class="mini-shape shape-8">
@@ -720,6 +742,7 @@
                     <div class="mini-cell" style="grid-area: 3/1/4/2;"></div>
                     <div class="mini-cell" style="grid-area: 3/2/4/3;"></div>
                 </div>
+                <span class="piece-number">8</span>
             </div>
         </div>
 
