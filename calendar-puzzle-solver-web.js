@@ -86,9 +86,8 @@ function serialize(grid, used) {
   return grid.flat().join(",") + "|" + used.join("");
 }
 
-let memo = new Set();
-
 // Backtracking solver - find ALL solutions
+// Note: Memoization removed for finding all solutions (prevents state explosion)
 function solve(grid, used, solutions = []) {
   // Check if all pieces are used
   if (used.every(v => v)) {
@@ -97,9 +96,6 @@ function solve(grid, used, solutions = []) {
     solutions.push(solutionCopy);
     return; // Continue searching for more solutions
   }
-
-  const key = serialize(grid, used);
-  if (memo.has(key)) return;
 
   // Try to place the next unused piece
   const pieceIndex = used.findIndex(v => !v);
@@ -119,8 +115,6 @@ function solve(grid, used, solutions = []) {
       }
     }
   }
-
-  memo.add(key);
 }
 
 function initGrid(month, day) {
@@ -309,7 +303,6 @@ function solvePuzzleUI(month, day) {
 
   showStatus('🔄 Finding all solutions...', 'solving');
 
-  memo.clear();
   allSolutions = [];
   currentSolutionIndex = 0;
   const grid = initGrid(month, day);
@@ -319,16 +312,9 @@ function solvePuzzleUI(month, day) {
 
   // Use setTimeout to allow UI to update
   setTimeout(() => {
-    console.log('Starting solve for', month, day);
-    console.log('Initial grid:', grid);
-    console.log('Pieces count:', rawPieces.length);
-    console.log('Transformed pieces:', transformedPieces.map((p, i) => `Piece ${i+1}: ${p.length} orientations`));
-    
     solve(grid, used, allSolutions);
     const endTime = Date.now();
     const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
-
-    console.log('Solutions found:', allSolutions.length);
 
     if (allSolutions.length > 0) {
       // Save all solutions to cache
@@ -337,7 +323,6 @@ function solvePuzzleUI(month, day) {
       updateSolutionNavigation(allSolutions.length, timeTaken);
       showStatus(`✅ Found ${allSolutions.length} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
     } else {
-      console.log('No solution found - rendering empty grid');
       renderBoard(initGrid(month, day));
       showStatus(`❌ No solution found (searched for ${timeTaken} seconds)`, 'error');
       hideSolutionNavigation();
