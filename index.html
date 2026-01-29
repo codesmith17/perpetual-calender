@@ -180,19 +180,22 @@
         .board::after {
             content: 'AATHVAN';
             position: absolute;
-            bottom: 10px;
-            right: 25px;
-            font-size: 34px;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
             font-weight: 900;
             font-family: 'Poppins', 'Arial Black', sans-serif;
             background: linear-gradient(135deg, #6b5444 0%, #8b6f47 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
             text-shadow: 
                 2px 2px 4px rgba(0,0,0,0.2);
             filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+            width: 90%;
+            text-align: center;
         }
 
         .cell {
@@ -464,10 +467,9 @@
             }
 
             .board::after {
-                font-size: 20px;
+                font-size: 32px;
                 bottom: 6px;
-                right: 12px;
-                letter-spacing: 2px;
+                letter-spacing: 4px;
             }
 
             .legend {
@@ -507,10 +509,9 @@
             }
 
             .board::after {
-                font-size: 16px;
-                letter-spacing: 1.5px;
+                font-size: 24px;
+                letter-spacing: 3px;
                 bottom: 4px;
-                right: 8px;
             }
 
             select, button {
