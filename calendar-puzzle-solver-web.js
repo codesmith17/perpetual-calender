@@ -353,13 +353,29 @@ function showPreviousSolution() {
 // ============================================
 
 // Get days in month
-function getDaysInMonth(month) {
+function getDaysInMonth(month, year = new Date().getFullYear()) {
   const daysMap = {
-    'JAN': 31, 'FEB': 29, 'MAR': 31, 'APR': 30,
-    'MAY': 31, 'JUN': 30, 'JUL': 31, 'AUG': 31,
-    'SEP': 30, 'OCT': 31, 'NOV': 30, 'DEC': 31
+    'JAN': 31, 
+    'FEB': isLeapYear(year) ? 29 : 28, 
+    'MAR': 31, 
+    'APR': 30,
+    'MAY': 31, 
+    'JUN': 30, 
+    'JUL': 31, 
+    'AUG': 31,
+    'SEP': 30, 
+    'OCT': 31, 
+    'NOV': 30, 
+    'DEC': 31
   };
   return daysMap[month] || 31;
+}
+
+function isLeapYear(year) {
+  // A year is a leap year if:
+  // - It's divisible by 4 AND
+  // - Either it's NOT divisible by 100 OR it IS divisible by 400
+  return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
 }
 
 function updateDayOptions(month) {
