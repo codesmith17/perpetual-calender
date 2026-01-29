@@ -348,25 +348,64 @@ function showPreviousSolution() {
 // INITIALIZATION
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Populate day select
+// ============================================
+// INITIALIZATION
+// ============================================
+
+// Get days in month
+function getDaysInMonth(month) {
+  const daysMap = {
+    'JAN': 31, 'FEB': 29, 'MAR': 31, 'APR': 30,
+    'MAY': 31, 'JUN': 30, 'JUL': 31, 'AUG': 31,
+    'SEP': 30, 'OCT': 31, 'NOV': 30, 'DEC': 31
+  };
+  return daysMap[month] || 31;
+}
+
+function updateDayOptions(month) {
   const daySelect = document.getElementById('daySelect');
-  for (let i = 1; i <= 31; i++) {
+  const currentDay = parseInt(daySelect.value) || 1;
+  const maxDays = getDaysInMonth(month);
+  
+  daySelect.innerHTML = '';
+  
+  for (let i = 1; i <= maxDays; i++) {
     const option = document.createElement('option');
     option.value = i;
     option.textContent = i;
     daySelect.appendChild(option);
   }
+  
+  // Restore previous selection if valid
+  if (currentDay <= maxDays) {
+    daySelect.value = currentDay;
+  } else {
+    daySelect.value = maxDays;
+  }
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+  // Populate day select based on current month
+  const monthSelect = document.getElementById('monthSelect');
+  const daySelect = document.getElementById('daySelect');
+  
   // Set today's date
   const today = new Date();
   const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", 
                       "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-  document.getElementById('monthSelect').value = monthNames[today.getMonth()];
-  document.getElementById('daySelect').value = today.getDate();
+  const currentMonth = monthNames[today.getMonth()];
+  
+  monthSelect.value = currentMonth;
+  updateDayOptions(currentMonth);
+  daySelect.value = today.getDate();
+
+  // Update days when month changes
+  monthSelect.addEventListener('change', (e) => {
+    updateDayOptions(e.target.value);
+  });
 
   // Render initial empty board
-  renderBoard(initGrid(monthNames[today.getMonth()], today.getDate()));
+  renderBoard(initGrid(currentMonth, today.getDate()));
 
   // Event listeners
   document.getElementById('solveBtn').addEventListener('click', () => {
