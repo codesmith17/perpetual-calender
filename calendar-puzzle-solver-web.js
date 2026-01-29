@@ -319,7 +319,8 @@ function updateSolutionNavigation(count, time) {
   }
   
   timeElement.style.display = 'block';
-  timeElement.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
+  const timeContent = timeElement.querySelector('span');
+  timeContent.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
 }
 
 function hideSolutionNavigation() {
