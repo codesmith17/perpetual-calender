@@ -354,38 +354,39 @@
         }
 
         .legend {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 25px;
+            flex-wrap: wrap;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #5d4e37;
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
+            justify-content: center;
             transition: all 0.3s ease;
         }
 
         .legend-item:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: translateX(3px);
+            transform: scale(1.15);
         }
 
         .legend-color {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
             box-shadow: 
-                0 3px 8px rgba(0, 0, 0, 0.15),
-                inset 0 1px 3px rgba(255, 255, 255, 0.5);
+                0 4px 10px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.5);
             border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .legend-color:hover {
+            box-shadow: 
+                0 6px 15px rgba(0, 0, 0, 0.25),
+                inset 0 2px 4px rgba(255, 255, 255, 0.5);
         }
 
         .info {
@@ -470,14 +471,12 @@
             }
 
             .legend {
-                grid-template-columns: repeat(2, 1fr);
                 gap: 8px;
-                font-size: 13px;
             }
 
             .legend-color {
-                width: 25px;
-                height: 25px;
+                width: 38px;
+                height: 38px;
             }
 
             .info {
@@ -520,7 +519,12 @@
             }
 
             .legend {
-                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+
+            .legend-color {
+                width: 35px;
+                height: 35px;
             }
         }
 
@@ -576,39 +580,30 @@
         <div class="legend">
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #f5eddc 0%, #e8dcc8 100%); border: 2px solid #98d98e;"></div>
-                <span>Target Date</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #f5c8e1 0%, #e8b4d4 60%, #d89fc0 100%);"></div>
-                <span>Piece 1</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #a8dbf5 0%, #87ceeb 60%, #6fb8d9 100%);"></div>
-                <span>Piece 2</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #cdb8e6 0%, #b19cd9 60%, #9a80c5 100%);"></div>
-                <span>Piece 3</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #b3e8a8 0%, #98d98e 60%, #7ec075 100%);"></div>
-                <span>Piece 4</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #e5bfe8 0%, #d4a5d8 60%, #c08cc5 100%);"></div>
-                <span>Piece 5</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #ffd8bc 0%, #f4c2a0 60%, #e5ab85 100%);"></div>
-                <span>Piece 6</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #9fd9ed 0%, #7ec8e3 60%, #63b3cf 100%);"></div>
-                <span>Piece 7</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color" style="background: linear-gradient(145deg, #ffd0dc 0%, #f5b7c8 60%, #e09fb1 100%);"></div>
-                <span>Piece 8</span>
             </div>
         </div>
 
