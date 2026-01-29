@@ -238,6 +238,7 @@ function renderBoard(grid) {
         } else {
           cell.classList.add('piece', `piece-${val}`);
           cell.textContent = val;
+          cell.setAttribute('data-piece', val);
         }
       }
 
@@ -246,7 +247,41 @@ function renderBoard(grid) {
   }
   
   // Reattach hover listeners after board is rendered
+  attachBoardHoverListeners();
   attachLegendHoverListeners();
+}
+
+function attachBoardHoverListeners() {
+  const boardCells = document.querySelectorAll('.cell[data-piece]');
+  
+  boardCells.forEach(cell => {
+    cell.addEventListener('mouseenter', () => {
+      const pieceNum = cell.getAttribute('data-piece');
+      
+      // Highlight all cells with same piece number
+      document.querySelectorAll(`.cell.piece-${pieceNum}`).forEach(c => {
+        c.classList.add('highlight');
+      });
+      
+      // Highlight corresponding legend item
+      const legendPiece = document.querySelector(`.legend-piece[data-piece="${pieceNum}"]`);
+      if (legendPiece) {
+        legendPiece.classList.add('shimmer-active');
+      }
+    });
+
+    cell.addEventListener('mouseleave', () => {
+      // Remove all highlights
+      document.querySelectorAll('.cell.highlight').forEach(c => {
+        c.classList.remove('highlight');
+      });
+      
+      // Remove legend shimmer
+      document.querySelectorAll('.legend-piece.shimmer-active').forEach(lp => {
+        lp.classList.remove('shimmer-active');
+      });
+    });
+  });
 }
 
 function attachLegendHoverListeners() {
@@ -272,6 +307,9 @@ function attachLegendHoverListeners() {
           cell.classList.add('highlight');
         }
       });
+      
+      // Add shimmer to legend piece itself
+      legendPiece.classList.add('shimmer-active');
     });
 
     legendPiece.addEventListener('mouseleave', () => {
@@ -280,6 +318,9 @@ function attachLegendHoverListeners() {
       highlightedCells.forEach(cell => {
         cell.classList.remove('highlight');
       });
+      
+      // Remove shimmer
+      legendPiece.classList.remove('shimmer-active');
     });
 
     // Click effect
@@ -303,11 +344,16 @@ function solvePuzzleUI(month, day) {
   showStatus('🔄 Checking solutions...', 'solving');
   hideSolutionNavigation();
   
+  // Add rotation animation to board
+  const boardElement = document.getElementById('board');
+  boardElement.classList.add('solving');
+  
   // Check cache first
   const cachedData = getCachedSolution(month, day);
   if (cachedData && cachedData.solutions && cachedData.solutions.length > 0) {
     // Small delay to show the solving message
     setTimeout(() => {
+      boardElement.classList.remove('solving');
       allSolutions = cachedData.solutions;
       currentSolutionIndex = 0;
       renderBoard(allSolutions[0]);
@@ -344,6 +390,9 @@ function solvePuzzleUI(month, day) {
     solve(grid, used, allSolutions, onSolutionFound);
     const endTime = Date.now();
     const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+
+    // Remove rotation animation
+    boardElement.classList.remove('solving');
 
     if (allSolutions.length > 0) {
       // Save all solutions to cache

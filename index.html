@@ -567,6 +567,35 @@
             100% { transform: scale(1.15); }
         }
 
+        /* Shimmer active state for bidirectional hover */
+        .legend-piece.shimmer-active::before {
+            opacity: 1 !important;
+            animation: shimmer-continuous 1.5s linear infinite;
+        }
+
+        .legend-piece.shimmer-active {
+            transform: translateY(-5px) scale(1.05);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Board rotation animation while solving */
+        .board.solving {
+            animation: board-rotate 2s ease-in-out infinite;
+        }
+
+        @keyframes board-rotate {
+            0%, 100% { 
+                transform: rotate(0deg);
+            }
+            25% { 
+                transform: rotate(-1deg);
+            }
+            75% { 
+                transform: rotate(1deg);
+            }
+        }
+
         .info {
             background: linear-gradient(135deg, rgba(249, 246, 240, 0.8) 0%, rgba(242, 236, 226, 0.8) 100%);
             backdrop-filter: blur(10px);
@@ -903,6 +932,6 @@
         </div>
     </div>
 
-    <script src="calendar-puzzle-solver-web.js?v=5"></script>
+    <script src="calendar-puzzle-solver-web.js?v=6"></script>
 </body>
 </html>
