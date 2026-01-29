@@ -143,12 +143,28 @@ function getCachedSolution(month, day) {
   try {
     const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
     if (cache.version !== CACHE_VERSION) {
+      // Clear old cache if version mismatch
       localStorage.removeItem(CACHE_KEY);
       return null;
     }
     const key = `${month}-${day}`;
-    return cache[key] || null;
+    const data = cache[key];
+    
+    // Validate cache data structure
+    if (!data || typeof data !== 'object') {
+      return null;
+    }
+    
+    // Check if it's the new format with solutions array
+    if (!Array.isArray(data.solutions) || data.solutions.length === 0) {
+      return null;
+    }
+    
+    return data;
   } catch (e) {
+    console.error('Cache read error:', e);
+    // Clear corrupted cache
+    localStorage.removeItem(CACHE_KEY);
     return null;
   }
 }
@@ -173,6 +189,8 @@ function clearCache() {
   try {
     localStorage.removeItem(CACHE_KEY);
     console.log('Cache cleared successfully');
+    // Force page reload to start fresh
+    window.location.reload();
   } catch (e) {
     console.error('Failed to clear cache:', e);
   }
@@ -265,14 +283,21 @@ function showStatus(message, type) {
 }
 
 function solvePuzzleUI(month, day) {
+  // Always show solving status first
+  showStatus('🔄 Checking solutions...', 'solving');
+  hideSolutionNavigation();
+  
   // Check cache first
   const cachedData = getCachedSolution(month, day);
   if (cachedData && cachedData.solutions && cachedData.solutions.length > 0) {
-    allSolutions = cachedData.solutions;
-    currentSolutionIndex = 0;
-    renderBoard(allSolutions[0]);
-    updateSolutionNavigation(cachedData.count, cachedData.time);
-    showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
+    // Small delay to show the solving message
+    setTimeout(() => {
+      allSolutions = cachedData.solutions;
+      currentSolutionIndex = 0;
+      renderBoard(allSolutions[0]);
+      updateSolutionNavigation(cachedData.count, cachedData.time);
+      showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
+    }, 200);
     return;
   }
 
@@ -401,6 +426,17 @@ function updateDayOptions(month) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Clear old cache on first load if needed
+  try {
+    const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
+    if (cache.version && cache.version !== CACHE_VERSION) {
+      console.log('Clearing old cache version:', cache.version);
+      localStorage.removeItem(CACHE_KEY);
+    }
+  } catch (e) {
+    localStorage.removeItem(CACHE_KEY);
+  }
+  
   // Populate day select based on current month
   const monthSelect = document.getElementById('monthSelect');
   const daySelect = document.getElementById('daySelect');
