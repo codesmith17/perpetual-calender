@@ -6,7 +6,11 @@
     <meta name="theme-color" content="#f5f1e8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Perpetual Calendar Puzzle Solver</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
+    <title>AATHVAN Puzzle Solver 📅</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -21,8 +25,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f1e8;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5e6d3 0%, #e8d4c0 50%, #d4b896 100%);
+            background-attachment: fixed;
             min-height: 100vh;
             padding: 20px;
             display: flex;
@@ -30,28 +35,55 @@
             align-items: center;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(200, 180, 150, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
             max-width: 900px;
             width: 100%;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow: 0 25px 80px rgba(139, 111, 71, 0.3),
+                        0 10px 30px rgba(0, 0, 0, 0.15),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.8);
             padding: 40px;
             margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
             text-align: center;
-            color: #333;
+            background: linear-gradient(135deg, #8b6f47 0%, #a0826d 50%, #6b5444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 10px;
-            font-size: 2.5em;
+            font-size: 2.8em;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 10px rgba(139, 111, 71, 0.2);
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
-            margin-bottom: 30px;
+            color: #8b6f47;
+            margin-bottom: 35px;
             font-size: 1.1em;
+            font-weight: 500;
+            opacity: 0.8;
         }
 
         .controls {
@@ -64,34 +96,60 @@
         }
 
         select, button {
-            padding: 12px 24px;
-            font-size: 16px;
-            border: 2px solid #a0826d;
-            border-radius: 8px;
+            padding: 13px 26px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            border: none;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
         }
 
         select {
             background: white;
             color: #5d4e37;
-            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(160, 130, 109, 0.2);
+        }
+
+        select:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            border-color: rgba(160, 130, 109, 0.4);
         }
 
         button {
-            background: #a0826d;
+            background: linear-gradient(135deg, #a0826d 0%, #8b6f47 100%);
             color: white;
-            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(139, 111, 71, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
         }
 
         button:hover {
-            background: #8b6f47;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 111, 71, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 111, 71, 0.4);
         }
 
         button:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .board-container {
@@ -106,29 +164,35 @@
         .board {
             display: inline-grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
-            background: #d4b896;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            border: 3px solid #c4a575;
+            gap: 4px;
+            background: linear-gradient(145deg, #d8bd9f 0%, #c4a575 50%, #b89968 100%);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 
+                0 15px 40px rgba(139, 111, 71, 0.4),
+                0 8px 16px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             position: relative;
         }
         
         .board::after {
             content: 'AATHVAN';
             position: absolute;
-            bottom: 8px;
-            right: 20px;
-            font-size: 32px;
+            bottom: 10px;
+            right: 25px;
+            font-size: 34px;
             font-weight: 900;
-            font-family: 'Arial Black', 'Arial Bold', sans-serif;
-            color: #6b5444;
-            letter-spacing: 3px;
+            font-family: 'Poppins', 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #6b5444 0%, #8b6f47 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
             text-shadow: 
-                1px 1px 0px rgba(0,0,0,0.3),
-                -1px -1px 0px rgba(255,255,255,0.3),
-                0px 2px 3px rgba(0,0,0,0.4);
+                2px 2px 4px rgba(0,0,0,0.2);
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
         }
 
         .cell {
@@ -137,10 +201,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Poppins', sans-serif;
         }
 
         .cell.empty {
@@ -149,134 +214,205 @@
         }
 
         .cell.available {
-            background: #e8dcc8;
+            background: linear-gradient(145deg, #f5eddc 0%, #e8dcc8 100%);
             color: #8b6f47;
-            font-weight: 600;
-            border: 1px solid #d4c4a8;
+            font-weight: 700;
+            box-shadow: 
+                inset 0 2px 4px rgba(255, 255, 255, 0.8),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.1),
+                0 2px 4px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(212, 196, 168, 0.5);
         }
 
         .cell.target {
-            background: #e8dcc8;
+            background: linear-gradient(145deg, #f5eddc 0%, #e8dcc8 100%);
             color: #2d5016;
             font-size: 18px;
-            font-weight: bold;
-            border: 3px solid #4ade80;
-            box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
-            animation: pulse 2s infinite;
+            font-weight: 800;
+            border: 3px solid #98d98e;
+            box-shadow: 
+                0 0 20px rgba(152, 217, 142, 0.5),
+                0 0 40px rgba(152, 217, 142, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            animation: pulse 2.5s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cell.target::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(152, 217, 142, 0.3) 50%,
+                transparent 70%
+            );
+            animation: shimmer 3s linear infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 
+                    0 0 20px rgba(152, 217, 142, 0.5),
+                    0 0 40px rgba(152, 217, 142, 0.2),
+                    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 
+                    0 0 30px rgba(152, 217, 142, 0.7),
+                    0 0 60px rgba(152, 217, 142, 0.3),
+                    inset 0 2px 4px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translate(-100%, -100%) rotate(45deg); }
+            100% { transform: translate(100%, 100%) rotate(45deg); }
         }
 
         .cell.piece {
-            color: #000;
-            font-weight: bold;
-            font-size: 20px;
+            color: rgba(0, 0, 0, 0.8);
+            font-weight: 800;
+            font-size: 22px;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 
-                        inset 0 -2px 4px rgba(0,0,0,0.2),
-                        0 2px 4px rgba(0,0,0,0.2);
-            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 2px 6px rgba(255,255,255,0.6), 
+                inset 0 -2px 6px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: transform 0.2s ease;
         }
 
-        /* Different colors matching physical puzzle pieces */
+        .cell.piece:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Different colors matching physical puzzle pieces with gradients */
         .cell.piece-1 { 
-            background: #e8b4d4; /* Light pink */
-            color: #000;
+            background: linear-gradient(145deg, #f5c8e1 0%, #e8b4d4 60%, #d89fc0 100%);
         }
         .cell.piece-2 { 
-            background: #87ceeb; /* Sky blue */
-            color: #000;
+            background: linear-gradient(145deg, #a8dbf5 0%, #87ceeb 60%, #6fb8d9 100%);
         }
         .cell.piece-3 { 
-            background: #b19cd9; /* Lavender purple */
-            color: #000;
+            background: linear-gradient(145deg, #cdb8e6 0%, #b19cd9 60%, #9a80c5 100%);
         }
         .cell.piece-4 { 
-            background: #98d98e; /* Light green */
-            color: #000;
+            background: linear-gradient(145deg, #b3e8a8 0%, #98d98e 60%, #7ec075 100%);
         }
         .cell.piece-5 { 
-            background: #d4a5d8; /* Purple */
-            color: #000;
+            background: linear-gradient(145deg, #e5bfe8 0%, #d4a5d8 60%, #c08cc5 100%);
         }
         .cell.piece-6 { 
-            background: #f4c2a0; /* Peach */
-            color: #000;
+            background: linear-gradient(145deg, #ffd8bc 0%, #f4c2a0 60%, #e5ab85 100%);
         }
         .cell.piece-7 { 
-            background: #7ec8e3; /* Cyan */
-            color: #000;
+            background: linear-gradient(145deg, #9fd9ed 0%, #7ec8e3 60%, #63b3cf 100%);
         }
         .cell.piece-8 { 
-            background: #f5b7c8; /* Pink */
-            color: #000;
+            background: linear-gradient(145deg, #ffd0dc 0%, #f5b7c8 60%, #e09fb1 100%);
         }
 
         .status {
             text-align: center;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 18px 24px;
+            border-radius: 16px;
             margin: 20px 0;
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 17px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .status.solving {
-            background: #fff8dc;
+            background: linear-gradient(135deg, rgba(255, 248, 220, 0.95) 0%, rgba(255, 243, 205, 0.95) 100%);
             color: #8b6f47;
-            border: 2px solid #d4c4a8;
+            animation: solving-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes solving-pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
         }
 
         .status.success {
-            background: #e8f5e9;
+            background: linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(200, 230, 201, 0.95) 100%);
             color: #2d5016;
-            border: 2px solid #98d98e;
         }
 
         .status.error {
-            background: #ffebee;
+            background: linear-gradient(135deg, rgba(255, 235, 238, 0.95) 0%, rgba(255, 205, 210, 0.95) 100%);
             color: #c62828;
-            border: 2px solid #ef9a9a;
         }
 
         .legend {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 25px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #5d4e37;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(3px);
         }
 
         .legend-color {
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 3px rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .info {
-            background: #f9f6f0;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(249, 246, 240, 0.8) 0%, rgba(242, 236, 226, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            padding: 20px 24px;
+            border-radius: 20px;
+            margin-top: 30px;
             color: #5d4e37;
-            border: 2px solid #d4c4a8;
+            border: 2px solid rgba(212, 196, 168, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         .info h3 {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #8b6f47 0%, #a0826d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .info p {
-            line-height: 1.6;
+            line-height: 1.7;
+            font-size: 14px;
+            opacity: 0.9;
         }
 
         @media (max-width: 768px) {
@@ -321,10 +457,15 @@
                 gap: 2px;
             }
 
+            .board {
+                padding: 12px;
+                border-radius: 16px;
+            }
+
             .board::after {
                 font-size: 20px;
-                bottom: 5px;
-                right: 10px;
+                bottom: 6px;
+                right: 12px;
                 letter-spacing: 2px;
             }
 
@@ -362,12 +503,15 @@
             }
 
             .board {
-                padding: 8px;
+                padding: 10px;
+                border-radius: 14px;
             }
 
             .board::after {
                 font-size: 16px;
-                letter-spacing: 1px;
+                letter-spacing: 1.5px;
+                bottom: 4px;
+                right: 8px;
             }
 
             select, button {
@@ -431,40 +575,40 @@
 
         <div class="legend">
             <div class="legend-item">
-                <div class="legend-color" style="background: #e8dcc8; border: 2px solid #4ade80;"></div>
+                <div class="legend-color" style="background: linear-gradient(145deg, #f5eddc 0%, #e8dcc8 100%); border: 2px solid #98d98e;"></div>
                 <span>Target Date</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #e8b4d4;"></div>
-                <span>Piece 1 - Pink</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #f5c8e1 0%, #e8b4d4 60%, #d89fc0 100%);"></div>
+                <span>Piece 1</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #87ceeb;"></div>
-                <span>Piece 2 - Sky Blue</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #a8dbf5 0%, #87ceeb 60%, #6fb8d9 100%);"></div>
+                <span>Piece 2</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #b19cd9;"></div>
-                <span>Piece 3 - Lavender</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #cdb8e6 0%, #b19cd9 60%, #9a80c5 100%);"></div>
+                <span>Piece 3</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #98d98e;"></div>
-                <span>Piece 4 - Green</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #b3e8a8 0%, #98d98e 60%, #7ec075 100%);"></div>
+                <span>Piece 4</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #d4a5d8;"></div>
-                <span>Piece 5 - Purple</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #e5bfe8 0%, #d4a5d8 60%, #c08cc5 100%);"></div>
+                <span>Piece 5</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #f4c2a0;"></div>
-                <span>Piece 6 - Peach</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #ffd8bc 0%, #f4c2a0 60%, #e5ab85 100%);"></div>
+                <span>Piece 6</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #7ec8e3;"></div>
-                <span>Piece 7 - Cyan</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #9fd9ed 0%, #7ec8e3 60%, #63b3cf 100%);"></div>
+                <span>Piece 7</span>
             </div>
             <div class="legend-item">
-                <div class="legend-color" style="background: #f5b7c8;"></div>
-                <span>Piece 8 - Pink</span>
+                <div class="legend-color" style="background: linear-gradient(145deg, #ffd0dc 0%, #f5b7c8 60%, #e09fb1 100%);"></div>
+                <span>Piece 8</span>
             </div>
         </div>
 
