@@ -292,4 +292,31 @@ document.addEventListener('DOMContentLoaded', () => {
     
     solvePuzzleUI(month, day);
   });
+
+  // Add hover interaction for legend pieces
+  const legendPieces = document.querySelectorAll('.legend-piece');
+  
+  legendPieces.forEach(legendPiece => {
+    legendPiece.addEventListener('mouseenter', () => {
+      const pieceNum = legendPiece.getAttribute('data-piece');
+      
+      // Highlight all cells with matching piece number
+      const boardCells = document.querySelectorAll('.cell.piece');
+      boardCells.forEach(cell => {
+        if (pieceNum === 'target' && cell.classList.contains('target')) {
+          cell.classList.add('highlight');
+        } else if (cell.classList.contains(`piece-${pieceNum}`)) {
+          cell.classList.add('highlight');
+        }
+      });
+    });
+
+    legendPiece.addEventListener('mouseleave', () => {
+      // Remove all highlights
+      const highlightedCells = document.querySelectorAll('.cell.highlight');
+      highlightedCells.forEach(cell => {
+        cell.classList.remove('highlight');
+      });
+    });
+  });
 });
