@@ -86,14 +86,24 @@ function serialize(grid, used) {
   return grid.flat().join(",") + "|" + used.join("");
 }
 
-// Backtracking solver - find ALL solutions
-// Note: Memoization removed for finding all solutions (prevents state explosion)
-function solve(grid, used, solutions = []) {
+// Backtracking solver - find up to MAX_SOLUTIONS
+const MAX_SOLUTIONS = 10;
+
+function solve(grid, used, solutions = [], onSolutionFound = null) {
+  // Stop if we found enough solutions
+  if (solutions.length >= MAX_SOLUTIONS) return;
+  
   // Check if all pieces are used
   if (used.every(v => v)) {
     // Found a solution! Save a copy
     const solutionCopy = grid.map(row => [...row]);
     solutions.push(solutionCopy);
+    
+    // Call the callback to update UI
+    if (onSolutionFound) {
+      onSolutionFound(solutions.length, solutionCopy);
+    }
+    
     return; // Continue searching for more solutions
   }
 
@@ -101,16 +111,22 @@ function solve(grid, used, solutions = []) {
   const pieceIndex = used.findIndex(v => !v);
 
   for (let shape of transformedPieces[pieceIndex]) {
+    // Early exit if we have enough solutions
+    if (solutions.length >= MAX_SOLUTIONS) return;
+    
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (canPlace(grid, shape, r, c)) {
           place(grid, shape, r, c, pieceIndex + 1);
           used[pieceIndex] = true;
 
-          solve(grid, used, solutions); // Recursive call
+          solve(grid, used, solutions, onSolutionFound); // Recursive call with callback
 
           used[pieceIndex] = false;
           remove(grid, shape, r, c);
+          
+          // Early exit check
+          if (solutions.length >= MAX_SOLUTIONS) return;
         }
       }
     }
@@ -296,12 +312,13 @@ function solvePuzzleUI(month, day) {
       currentSolutionIndex = 0;
       renderBoard(allSolutions[0]);
       updateSolutionNavigation(cachedData.count, cachedData.time);
-      showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
+      const maxNote = cachedData.count >= MAX_SOLUTIONS ? '+' : '';
+      showStatus(`✅ Found ${cachedData.count}${maxNote} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
     }, 200);
     return;
   }
 
-  showStatus('🔄 Finding all solutions...', 'solving');
+  showStatus('🔄 Finding solutions...', 'solving');
 
   allSolutions = [];
   currentSolutionIndex = 0;
@@ -312,7 +329,19 @@ function solvePuzzleUI(month, day) {
 
   // Use setTimeout to allow UI to update
   setTimeout(() => {
-    solve(grid, used, allSolutions);
+    // Callback to update UI as solutions are found
+    const onSolutionFound = (count, solution) => {
+      // Render the first solution immediately
+      if (count === 1) {
+        renderBoard(solution);
+      }
+      
+      // Update status with current count
+      const maxNote = count >= MAX_SOLUTIONS ? '+' : '';
+      showStatus(`🔍 Found ${count}${maxNote} solution${count > 1 ? 's' : ''}...`, 'solving');
+    };
+    
+    solve(grid, used, allSolutions, onSolutionFound);
     const endTime = Date.now();
     const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
 
@@ -321,7 +350,8 @@ function solvePuzzleUI(month, day) {
       saveSolutionToCache(month, day, allSolutions, timeTaken);
       renderBoard(allSolutions[0]);
       updateSolutionNavigation(allSolutions.length, timeTaken);
-      showStatus(`✅ Found ${allSolutions.length} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
+      const maxNote = allSolutions.length >= MAX_SOLUTIONS ? '+' : '';
+      showStatus(`✅ Found ${allSolutions.length}${maxNote} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
     } else {
       renderBoard(initGrid(month, day));
       showStatus(`❌ No solution found (searched for ${timeTaken} seconds)`, 'error');
@@ -335,16 +365,18 @@ function updateSolutionNavigation(count, time) {
   const counterElement = document.getElementById('solutionCounter');
   const timeElement = document.getElementById('solveTime');
   
+  const maxNote = count >= MAX_SOLUTIONS ? '+' : '';
+  
   if (count > 1) {
     navElement.style.display = 'flex';
-    counterElement.textContent = `Solution ${currentSolutionIndex + 1} of ${count}`;
+    counterElement.textContent = `Solution ${currentSolutionIndex + 1} of ${count}${maxNote}`;
   } else {
     navElement.style.display = 'none';
   }
   
   timeElement.style.display = 'block';
   const timeContent = timeElement.querySelector('span');
-  timeContent.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
+  timeContent.textContent = `⏱️ Solved in ${time}s • ${count}${maxNote} solution${count > 1 ? 's' : ''} found`;
 }
 
 function hideSolutionNavigation() {
