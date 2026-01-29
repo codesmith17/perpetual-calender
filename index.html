@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perpetual Calendar Puzzle Solver</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f1e8;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: 2px solid #a0826d;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select {
+            background: white;
+            color: #5d4e37;
+            font-weight: 600;
+        }
+
+        button {
+            background: #a0826d;
+            color: white;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #8b6f47;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 111, 71, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .board-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .board {
+            display: inline-grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+            background: #d4b896;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            border: 3px solid #c4a575;
+            position: relative;
+        }
+        
+        .board::after {
+            content: 'AATHVAN';
+            position: absolute;
+            bottom: 8px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: 900;
+            font-family: 'Arial Black', 'Arial Bold', sans-serif;
+            color: #6b5444;
+            letter-spacing: 3px;
+            text-shadow: 
+                1px 1px 0px rgba(0,0,0,0.3),
+                -1px -1px 0px rgba(255,255,255,0.3),
+                0px 2px 3px rgba(0,0,0,0.4);
+        }
+
+        .cell {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .cell.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .cell.available {
+            background: #e8dcc8;
+            color: #8b6f47;
+            font-weight: 600;
+            border: 1px solid #d4c4a8;
+        }
+
+        .cell.target {
+            background: #e8dcc8;
+            color: #2d5016;
+            font-size: 18px;
+            font-weight: bold;
+            border: 3px solid #4ade80;
+            box-shadow: 0 0 12px rgba(74, 222, 128, 0.6);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .cell.piece {
+            color: #000;
+            font-weight: bold;
+            font-size: 20px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 
+                        inset 0 -2px 4px rgba(0,0,0,0.2),
+                        0 2px 4px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Different colors matching physical puzzle pieces */
+        .cell.piece-1 { 
+            background: #e8b4d4; /* Light pink */
+            color: #000;
+        }
+        .cell.piece-2 { 
+            background: #87ceeb; /* Sky blue */
+            color: #000;
+        }
+        .cell.piece-3 { 
+            background: #b19cd9; /* Lavender purple */
+            color: #000;
+        }
+        .cell.piece-4 { 
+            background: #98d98e; /* Light green */
+            color: #000;
+        }
+        .cell.piece-5 { 
+            background: #d4a5d8; /* Purple */
+            color: #000;
+        }
+        .cell.piece-6 { 
+            background: #f4c2a0; /* Peach */
+            color: #000;
+        }
+        .cell.piece-7 { 
+            background: #7ec8e3; /* Cyan */
+            color: #000;
+        }
+        .cell.piece-8 { 
+            background: #f5b7c8; /* Pink */
+            color: #000;
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .status.solving {
+            background: #fff8dc;
+            color: #8b6f47;
+            border: 2px solid #d4c4a8;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            color: #2d5016;
+            border: 2px solid #98d98e;
+        }
+
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #ef9a9a;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+
+        .info {
+            background: #f9f6f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #5d4e37;
+            border: 2px solid #d4c4a8;
+        }
+
+        .info h3 {
+            margin-bottom: 10px;
+        }
+
+        .info p {
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .cell {
+                width: 50px;
+                height: 50px;
+                font-size: 12px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Perpetual Calendar Puzzle</h1>
+        <p class="subtitle">Find the solution for any date!</p>
+
+        <div class="controls">
+            <select id="monthSelect">
+                <option value="JAN">January</option>
+                <option value="FEB">February</option>
+                <option value="MAR">March</option>
+                <option value="APR">April</option>
+                <option value="MAY">May</option>
+                <option value="JUN">June</option>
+                <option value="JUL">July</option>
+                <option value="AUG">August</option>
+                <option value="SEP">September</option>
+                <option value="OCT">October</option>
+                <option value="NOV">November</option>
+                <option value="DEC">December</option>
+            </select>
+
+            <select id="daySelect">
+                <!-- Days 1-31 will be populated by JavaScript -->
+            </select>
+
+            <button id="solveBtn">🔍 Solve Puzzle</button>
+            <button id="todayBtn">📅 Today's Date</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="board-container">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8dcc8; border: 2px solid #4ade80;"></div>
+                <span>Target Date</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8b4d4;"></div>
+                <span>Piece 1 - Pink</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #87ceeb;"></div>
+                <span>Piece 2 - Sky Blue</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #b19cd9;"></div>
+                <span>Piece 3 - Lavender</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #98d98e;"></div>
+                <span>Piece 4 - Green</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #d4a5d8;"></div>
+                <span>Piece 5 - Purple</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f4c2a0;"></div>
+                <span>Piece 6 - Peach</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #7ec8e3;"></div>
+                <span>Piece 7 - Cyan</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f5b7c8;"></div>
+                <span>Piece 8 - Pink</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <h3>About This Puzzle</h3>
+            <p>
+                This is a perpetual calendar puzzle where you arrange 8 wooden pieces to cover all cells 
+                except the current month and date. Each day has a unique solution! The solver uses a 
+                backtracking algorithm with memoization to find valid arrangements.
+            </p>
+        </div>
+    </div>
+
+    <script src="calendar-puzzle-solver-web.js"></script>
+</body>
+</html>
