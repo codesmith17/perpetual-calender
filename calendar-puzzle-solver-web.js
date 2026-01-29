@@ -153,12 +153,16 @@ function getCachedSolution(month, day) {
   }
 }
 
-function saveSolutionToCache(month, day, grid) {
+function saveSolutionToCache(month, day, solutions, timeTaken) {
   try {
     let cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
     cache.version = CACHE_VERSION;
     const key = `${month}-${day}`;
-    cache[key] = grid;
+    cache[key] = {
+      solutions: solutions,
+      count: solutions.length,
+      time: timeTaken
+    };
     localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
   } catch (e) {
     console.error('Failed to cache solution:', e);
@@ -262,16 +266,21 @@ function showStatus(message, type) {
 
 function solvePuzzleUI(month, day) {
   // Check cache first
-  const cachedSolution = getCachedSolution(month, day);
-  if (cachedSolution) {
-    renderBoard(cachedSolution);
-    showStatus(`✅ Solution found!`, 'success');
+  const cachedData = getCachedSolution(month, day);
+  if (cachedData) {
+    allSolutions = cachedData.solutions;
+    currentSolutionIndex = 0;
+    renderBoard(allSolutions[0]);
+    updateSolutionNavigation(cachedData.count, cachedData.time);
+    showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
     return;
   }
 
-  showStatus('🔄 Solving puzzle...', 'solving');
+  showStatus('🔄 Finding all solutions...', 'solving');
 
   memo.clear();
+  allSolutions = [];
+  currentSolutionIndex = 0;
   const grid = initGrid(month, day);
   const used = Array(rawPieces.length).fill(false);
 
@@ -279,20 +288,59 @@ function solvePuzzleUI(month, day) {
 
   // Use setTimeout to allow UI to update
   setTimeout(() => {
-    const found = solve(grid, used);
+    solve(grid, used, allSolutions);
     const endTime = Date.now();
     const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
 
-    if (found) {
-      // Save to cache
-      saveSolutionToCache(month, day, grid);
-      renderBoard(grid);
-      showStatus(`✅ Solution found in ${timeTaken} seconds!`, 'success');
+    if (allSolutions.length > 0) {
+      // Save all solutions to cache
+      saveSolutionToCache(month, day, allSolutions, timeTaken);
+      renderBoard(allSolutions[0]);
+      updateSolutionNavigation(allSolutions.length, timeTaken);
+      showStatus(`✅ Found ${allSolutions.length} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
     } else {
       renderBoard(initGrid(month, day));
-      showStatus(`❌ No solution found (tried for ${timeTaken} seconds)`, 'error');
+      showStatus(`❌ No solution found (searched for ${timeTaken} seconds)`, 'error');
+      hideSolutionNavigation();
     }
   }, 100);
+}
+
+function updateSolutionNavigation(count, time) {
+  const navElement = document.getElementById('solutionNav');
+  const counterElement = document.getElementById('solutionCounter');
+  const timeElement = document.getElementById('solveTime');
+  
+  if (count > 1) {
+    navElement.style.display = 'flex';
+    counterElement.textContent = `Solution ${currentSolutionIndex + 1} of ${count}`;
+  } else {
+    navElement.style.display = 'none';
+  }
+  
+  timeElement.style.display = 'block';
+  timeElement.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
+}
+
+function hideSolutionNavigation() {
+  document.getElementById('solutionNav').style.display = 'none';
+  document.getElementById('solveTime').style.display = 'none';
+}
+
+function showNextSolution() {
+  if (allSolutions.length === 0) return;
+  currentSolutionIndex = (currentSolutionIndex + 1) % allSolutions.length;
+  renderBoard(allSolutions[currentSolutionIndex]);
+  document.getElementById('solutionCounter').textContent = 
+    `Solution ${currentSolutionIndex + 1} of ${allSolutions.length}`;
+}
+
+function showPreviousSolution() {
+  if (allSolutions.length === 0) return;
+  currentSolutionIndex = (currentSolutionIndex - 1 + allSolutions.length) % allSolutions.length;
+  renderBoard(allSolutions[currentSolutionIndex]);
+  document.getElementById('solutionCounter').textContent = 
+    `Solution ${currentSolutionIndex + 1} of ${allSolutions.length}`;
 }
 
 // ============================================
@@ -338,6 +386,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     solvePuzzleUI(month, day);
   });
+
+  // Solution navigation buttons
+  document.getElementById('prevSolution').addEventListener('click', showPreviousSolution);
+  document.getElementById('nextSolution').addEventListener('click', showNextSolution);
 
   // Initialize hover listeners
   attachLegendHoverListeners();
