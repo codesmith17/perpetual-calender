@@ -208,6 +208,10 @@
             border-radius: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 4px;
         }
 
         .cell.empty {
@@ -251,10 +255,13 @@
             background: linear-gradient(
                 45deg,
                 transparent 30%,
-                rgba(152, 217, 142, 0.3) 50%,
+                rgba(152, 217, 142, 0.4) 48%,
+                rgba(152, 217, 142, 0.6) 50%,
+                rgba(152, 217, 142, 0.4) 52%,
                 transparent 70%
             );
             animation: shimmer 3s linear infinite;
+            border-radius: 12px;
         }
 
         @keyframes pulse {
@@ -393,11 +400,14 @@
             background: linear-gradient(
                 45deg,
                 transparent 30%,
-                rgba(255, 255, 255, 0.8) 50%,
+                rgba(255, 215, 0, 0.5) 48%,
+                rgba(255, 223, 0, 0.7) 50%,
+                rgba(255, 215, 0, 0.5) 52%,
                 transparent 70%
             );
             opacity: 0;
             transition: opacity 0.3s;
+            border-radius: 16px;
         }
 
         .legend-piece:hover::before {
@@ -618,6 +628,16 @@
             .cell {
                 width: 45px;
                 height: 45px;
+                font-size: 11px;
+                padding: 2px;
+            }
+
+            .cell.available,
+            .cell.target {
+                font-size: 10px;
+            }
+
+            .cell.piece {
                 font-size: 13px;
             }
 
@@ -678,6 +698,16 @@
             .cell {
                 width: 40px;
                 height: 40px;
+                font-size: 9px;
+                padding: 1px;
+            }
+
+            .cell.available,
+            .cell.target {
+                font-size: 8px;
+            }
+
+            .cell.piece {
                 font-size: 11px;
             }
 
