@@ -206,6 +206,44 @@ function renderBoard(grid) {
       boardElement.appendChild(cell);
     }
   }
+  
+  // Reattach hover listeners after board is rendered
+  attachLegendHoverListeners();
+}
+
+function attachLegendHoverListeners() {
+  const legendPieces = document.querySelectorAll('.legend-piece');
+  
+  legendPieces.forEach(legendPiece => {
+    // Remove old listeners by cloning
+    const newLegendPiece = legendPiece.cloneNode(true);
+    legendPiece.parentNode.replaceChild(newLegendPiece, legendPiece);
+  });
+  
+  // Add new listeners
+  document.querySelectorAll('.legend-piece').forEach(legendPiece => {
+    legendPiece.addEventListener('mouseenter', () => {
+      const pieceNum = legendPiece.getAttribute('data-piece');
+      
+      // Highlight all cells with matching piece number
+      const boardCells = document.querySelectorAll('.cell');
+      boardCells.forEach(cell => {
+        if (pieceNum === 'target' && cell.classList.contains('target')) {
+          cell.classList.add('highlight');
+        } else if (cell.classList.contains(`piece-${pieceNum}`)) {
+          cell.classList.add('highlight');
+        }
+      });
+    });
+
+    legendPiece.addEventListener('mouseleave', () => {
+      // Remove all highlights
+      const highlightedCells = document.querySelectorAll('.cell.highlight');
+      highlightedCells.forEach(cell => {
+        cell.classList.remove('highlight');
+      });
+    });
+  });
 }
 
 function showStatus(message, type) {
@@ -293,30 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
     solvePuzzleUI(month, day);
   });
 
-  // Add hover interaction for legend pieces
-  const legendPieces = document.querySelectorAll('.legend-piece');
-  
-  legendPieces.forEach(legendPiece => {
-    legendPiece.addEventListener('mouseenter', () => {
-      const pieceNum = legendPiece.getAttribute('data-piece');
-      
-      // Highlight all cells with matching piece number
-      const boardCells = document.querySelectorAll('.cell.piece');
-      boardCells.forEach(cell => {
-        if (pieceNum === 'target' && cell.classList.contains('target')) {
-          cell.classList.add('highlight');
-        } else if (cell.classList.contains(`piece-${pieceNum}`)) {
-          cell.classList.add('highlight');
-        }
-      });
-    });
-
-    legendPiece.addEventListener('mouseleave', () => {
-      // Remove all highlights
-      const highlightedCells = document.querySelectorAll('.cell.highlight');
-      highlightedCells.forEach(cell => {
-        cell.classList.remove('highlight');
-      });
-    });
-  });
+  // Initialize hover listeners
+  attachLegendHoverListeners();
 });
