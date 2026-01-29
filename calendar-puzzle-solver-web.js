@@ -137,7 +137,7 @@ function initGrid(month, day) {
 // ============================================
 
 const CACHE_KEY = 'calendar_puzzle_solutions';
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2'; // Updated version to clear old cache format
 
 function getCachedSolution(month, day) {
   try {
@@ -267,7 +267,7 @@ function showStatus(message, type) {
 function solvePuzzleUI(month, day) {
   // Check cache first
   const cachedData = getCachedSolution(month, day);
-  if (cachedData) {
+  if (cachedData && cachedData.solutions && cachedData.solutions.length > 0) {
     allSolutions = cachedData.solutions;
     currentSolutionIndex = 0;
     renderBoard(allSolutions[0]);
