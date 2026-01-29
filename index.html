@@ -356,26 +356,31 @@
         }
 
         .legend {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 16px;
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(242, 236, 226, 0.6) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.5);
         }
 
         .legend-piece {
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 8px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.3);
+            padding: 12px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.8);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .legend-piece::before {
@@ -388,7 +393,7 @@
             background: linear-gradient(
                 45deg,
                 transparent 30%,
-                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.8) 50%,
                 transparent 70%
             );
             opacity: 0;
@@ -401,14 +406,14 @@
         }
 
         .legend-piece:hover {
-            transform: scale(1.15);
-            background: rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px) scale(1.05);
+            background: rgba(255, 255, 255, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .legend-piece:active {
-            transform: scale(1.05);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         @keyframes shimmer-continuous {
@@ -417,10 +422,21 @@
         }
 
         .piece-number {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: #5d4e37;
             font-family: 'Poppins', sans-serif;
+            background: rgba(93, 78, 55, 0.1);
+            padding: 4px 10px;
+            border-radius: 8px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .piece-number.target-label {
+            background: linear-gradient(135deg, rgba(152, 217, 142, 0.2), rgba(152, 217, 142, 0.3));
+            color: #2d5016;
+            font-size: 16px;
         }
 
         .mini-shape {
@@ -618,23 +634,29 @@
 
             .board::after {
                 font-size: 32px;
-                bottom: 8px;
+                bottom: 10px;
                 right: 15px;
                 letter-spacing: 4px;
             }
 
             .legend {
-                gap: 8px;
-                padding: 10px;
+                gap: 10px;
+                padding: 15px;
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
             }
 
             .legend-piece {
-                padding: 6px;
+                padding: 10px;
             }
 
             .mini-shape {
                 grid-template-columns: repeat(4, 12px);
                 grid-template-rows: repeat(5, 12px);
+            }
+
+            .piece-number {
+                font-size: 12px;
+                padding: 3px 8px;
             }
 
             .info {
@@ -678,8 +700,9 @@
             }
 
             .legend {
-                gap: 6px;
-                padding: 8px;
+                gap: 8px;
+                padding: 12px;
+                grid-template-columns: repeat(3, 1fr);
             }
 
             .mini-shape {
@@ -689,7 +712,12 @@
             }
 
             .legend-piece {
-                padding: 5px;
+                padding: 8px;
+            }
+
+            .piece-number {
+                font-size: 11px;
+                padding: 2px 6px;
             }
         }
 
@@ -747,7 +775,7 @@
                 <div class="mini-shape shape-target">
                     <div class="mini-cell"></div>
                 </div>
-                <span class="piece-number">📅</span>
+                <span class="piece-number target-label">Date</span>
             </div>
             <div class="legend-piece" data-piece="1">
                 <div class="mini-shape shape-1">
