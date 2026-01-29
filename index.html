@@ -2,13 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f5f1e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Perpetual Calendar Puzzle Solver</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
         }
 
         body {
@@ -89,6 +98,9 @@
             display: flex;
             justify-content: center;
             margin: 30px 0;
+            overflow-x: auto;
+            padding: 10px 0;
+            -webkit-overflow-scrolling: touch;
         }
 
         .board {
@@ -268,14 +280,116 @@
         }
 
         @media (max-width: 768px) {
-            .cell {
-                width: 50px;
-                height: 50px;
-                font-size: 12px;
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 20px;
+                margin: 10px 0;
             }
 
             h1 {
-                font-size: 1.8em;
+                font-size: 1.6em;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 0.9em;
+                margin-bottom: 20px;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            select, button {
+                padding: 10px 16px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 150px;
+            }
+
+            .cell {
+                width: 45px;
+                height: 45px;
+                font-size: 13px;
+            }
+
+            .board {
+                padding: 10px;
+                gap: 2px;
+            }
+
+            .board::after {
+                font-size: 20px;
+                bottom: 5px;
+                right: 10px;
+                letter-spacing: 2px;
+            }
+
+            .legend {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                font-size: 13px;
+            }
+
+            .legend-color {
+                width: 25px;
+                height: 25px;
+            }
+
+            .info {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .status {
+                font-size: 14px;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.4em;
+            }
+
+            .cell {
+                width: 40px;
+                height: 40px;
+                font-size: 11px;
+            }
+
+            .board {
+                padding: 8px;
+            }
+
+            .board::after {
+                font-size: 16px;
+                letter-spacing: 1px;
+            }
+
+            select, button {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+
+            .legend {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Better touch targets for mobile */
+        @media (hover: none) {
+            button {
+                padding: 14px 24px;
+                font-size: 16px;
+            }
+
+            select {
+                padding: 14px;
+                font-size: 16px;
             }
         }
     </style>
