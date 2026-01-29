@@ -243,6 +243,14 @@ function attachLegendHoverListeners() {
         cell.classList.remove('highlight');
       });
     });
+
+    // Click effect
+    legendPiece.addEventListener('click', () => {
+      legendPiece.classList.add('clicked');
+      setTimeout(() => {
+        legendPiece.classList.remove('clicked');
+      }, 400);
+    });
   });
 }
 
