@@ -272,13 +272,16 @@ function solvePuzzleUI(month, day) {
       if (count === 1) {
         renderBoard(solution);
         currentSolutionIndex = 0;
+        // Remove solving animation on first solution
+        boardElement.classList.remove('solving');
+        showStatus(`✅ Found first solution! Searching for more...`, 'success');
+      } else {
+        // Update status with current count for subsequent solutions
+        showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
       }
       
       // Console log for debugging
       console.log(`Solution #${count}:`, solution);
-      
-      // Update status with current count
-      showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
     }
     else if (type === 'complete') {
       // Remove rotation animation

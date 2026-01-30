@@ -1,15 +1,14 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"syscall/js"
-	"time"
 )
 
 const (
-	ROWS = 7
-	COLS = 7
+	ROWS          = 7
+	COLS          = 7
+	NUM_PIECES    = 8
+	MAX_SOLUTIONS = 10
 )
 
 var boardLayout = [][]string{
@@ -27,22 +26,21 @@ type Point struct {
 }
 
 var rawPieces = [][]Point{
-	{{0, 1}, {0, 2}, {1, 1}, {2, 0}, {2, 1}},      // Piece 1
-	{{0, 0}, {1, 0}, {1, 1}, {1, 2}, {0, 2}},      // Piece 2
-	{{0, 0}, {1, 0}, {2, 0}, {1, 1}, {2, 1}},      // Piece 3
-	{{0, 1}, {1, 1}, {2, 0}, {2, 1}, {3, 1}},      // Piece 4
-	{{0, 0}, {1, 0}, {2, 0}, {2, 1}, {2, 2}},      // Piece 5
-	{{0, 0}, {1, 0}, {2, 0}, {2, 1}, {3, 1}},      // Piece 6
-	{{0, 0}, {1, 0}, {2, 0}, {3, 0}, {3, 1}},      // Piece 7
-	{{0, 0}, {0, 1}, {1, 0}, {1, 1}, {2, 0}, {2, 1}}, // Piece 8
+	{{0, 1}, {0, 2}, {1, 1}, {2, 0}, {2, 1}},
+	{{0, 0}, {1, 0}, {1, 1}, {1, 2}, {0, 2}},
+	{{0, 0}, {1, 0}, {2, 0}, {1, 1}, {2, 1}},
+	{{0, 1}, {1, 1}, {2, 0}, {2, 1}, {3, 1}},
+	{{0, 0}, {1, 0}, {2, 0}, {2, 1}, {2, 2}},
+	{{0, 0}, {1, 0}, {2, 0}, {2, 1}, {3, 1}},
+	{{0, 0}, {1, 0}, {2, 0}, {3, 0}, {3, 1}},
+	{{0, 0}, {0, 1}, {1, 0}, {1, 1}, {2, 0}, {2, 1}},
 }
 
-var transformedPieces [][][]Point
+var transformedPieces [NUM_PIECES][][]Point
 
 func init() {
-	transformedPieces = make([][][]Point, len(rawPieces))
-	for i, piece := range rawPieces {
-		transformedPieces[i] = getTransforms(piece)
+	for i := 0; i < NUM_PIECES; i++ {
+		transformedPieces[i] = getTransforms(rawPieces[i])
 	}
 }
 
@@ -58,7 +56,6 @@ func normalize(shape []Point) []Point {
 	if len(shape) == 0 {
 		return shape
 	}
-
 	minR, minC := shape[0].R, shape[0].C
 	for _, p := range shape {
 		if p.R < minR {
@@ -68,7 +65,6 @@ func normalize(shape []Point) []Point {
 			minC = p.C
 		}
 	}
-
 	result := make([]Point, len(shape))
 	for i, p := range shape {
 		result[i] = Point{R: p.R - minR, C: p.C - minC}
@@ -76,36 +72,54 @@ func normalize(shape []Point) []Point {
 	return result
 }
 
-func shapeToString(shape []Point) string {
-	data, _ := json.Marshal(shape)
-	return string(data)
+func shapeEqual(a, b []Point) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].R != b[i].R || a[i].C != b[i].C {
+			return false
+		}
+	}
+	return true
 }
 
 func getTransforms(shape []Point) [][]Point {
-	formsMap := make(map[string][]Point)
+	var unique [][]Point
 	s := shape
-
 	for i := 0; i < 4; i++ {
 		s = rotate(s)
 		norm := normalize(s)
-		formsMap[shapeToString(norm)] = norm
-
+		isUnique := true
+		for _, existing := range unique {
+			if shapeEqual(norm, existing) {
+				isUnique = false
+				break
+			}
+		}
+		if isUnique {
+			unique = append(unique, norm)
+		}
 		flipped := make([]Point, len(norm))
 		for j, p := range norm {
 			flipped[j] = Point{R: p.R, C: -p.C}
 		}
 		flippedNorm := normalize(flipped)
-		formsMap[shapeToString(flippedNorm)] = flippedNorm
+		isUnique = true
+		for _, existing := range unique {
+			if shapeEqual(flippedNorm, existing) {
+				isUnique = false
+				break
+			}
+		}
+		if isUnique {
+			unique = append(unique, flippedNorm)
+		}
 	}
-
-	result := make([][]Point, 0, len(formsMap))
-	for _, form := range formsMap {
-		result = append(result, form)
-	}
-	return result
+	return unique
 }
 
-func canPlace(grid [][]int, shape []Point, r, c int) bool {
+func canPlace(grid *[ROWS][COLS]int, shape []Point, r, c int) bool {
 	for _, p := range shape {
 		nr, nc := r+p.R, c+p.C
 		if nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS {
@@ -121,24 +135,20 @@ func canPlace(grid [][]int, shape []Point, r, c int) bool {
 	return true
 }
 
-func place(grid [][]int, shape []Point, r, c, pieceID int) {
+func place(grid *[ROWS][COLS]int, shape []Point, r, c, pieceID int) {
 	for _, p := range shape {
 		grid[r+p.R][c+p.C] = pieceID
 	}
 }
 
-func remove(grid [][]int, shape []Point, r, c int) {
+func remove(grid *[ROWS][COLS]int, shape []Point, r, c int) {
 	for _, p := range shape {
 		grid[r+p.R][c+p.C] = 0
 	}
 }
 
-func initGrid(month, day string) [][]int {
-	grid := make([][]int, ROWS)
-	for i := range grid {
-		grid[i] = make([]int, COLS)
-	}
-
+func initGrid(month, day string) [ROWS][COLS]int {
+	var grid [ROWS][COLS]int
 	for r := 0; r < ROWS; r++ {
 		for c := 0; c < COLS; c++ {
 			cell := boardLayout[r][c]
@@ -147,107 +157,94 @@ func initGrid(month, day string) [][]int {
 			}
 		}
 	}
-
 	return grid
 }
 
-func copyGrid(grid [][]int) [][]int {
-	newGrid := make([][]int, len(grid))
-	for i := range grid {
-		newGrid[i] = make([]int, len(grid[i]))
-		copy(newGrid[i], grid[i])
-	}
-	return newGrid
-}
-
-const (
-	allPiecesMask = (1 << 8) - 1 // 255 for 8 pieces
-	maxSolutions  = 10             // Find up to 10 solutions
-)
-
-// Convert grid to string for deduplication
-func gridToString(grid [][]int) string {
-	var result string
-	for _, row := range grid {
-		for _, val := range row {
-			result += fmt.Sprintf("%d,", val)
+func gridHash(grid *[ROWS][COLS]int, usedMask int) uint64 {
+	const (
+		offset64 = 14695981039346656037
+		prime64  = 1099511628211
+	)
+	hash := uint64(offset64)
+	for r := 0; r < ROWS; r++ {
+		for c := 0; c < COLS; c++ {
+			hash ^= uint64(grid[r][c])
+			hash *= prime64
 		}
 	}
-	return result
+	hash ^= uint64(usedMask)
+	hash *= prime64
+	return hash
 }
 
-func solve(grid [][]int, usedMask int, solutions *[][][]int, solutionSet map[string]bool) {
-	// Stop if we found enough solutions
-	if len(*solutions) >= maxSolutions {
+func gridsEqual(g1, g2 *[ROWS][COLS]int) bool {
+	for r := 0; r < ROWS; r++ {
+		for c := 0; c < COLS; c++ {
+			if g1[r][c] != g2[r][c] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+const allPiecesMask = (1 << NUM_PIECES) - 1
+
+func solve(
+	grid *[ROWS][COLS]int,
+	usedMask int,
+	solutions *[][ROWS][COLS]int,
+	solutionSet *map[uint64][][ROWS][COLS]int,
+	memo *map[uint64]bool,
+	progressCallback js.Value,
+) {
+	if len(*solutions) >= MAX_SOLUTIONS {
 		return
 	}
-	
-	// Check if all pieces are used
+
+	hash := gridHash(grid, usedMask)
+	if (*memo)[hash] {
+		return
+	}
+	(*memo)[hash] = true
+
 	if usedMask == allPiecesMask {
-		// Check for duplicate solution
-		gridStr := gridToString(grid)
-		
-		fmt.Printf("\n🔍 Found solution, checking uniqueness...\n")
-		fmt.Printf("   Grid hash: %s\n", gridStr[:50]+"...") // Show first 50 chars
-		fmt.Printf("   Already in set: %v\n", solutionSet[gridStr])
-		
-		if solutionSet[gridStr] {
-			fmt.Println("⚠️  Skipping duplicate solution")
-			return // Skip duplicate
+		if existing, found := (*solutionSet)[hash]; found {
+			for i := range existing {
+				if gridsEqual(grid, &existing[i]) {
+					return
+				}
+			}
 		}
-		
-		gridCopy := copyGrid(grid)
-		solutionSet[gridStr] = true
+		gridCopy := *grid
+		(*solutionSet)[hash] = append((*solutionSet)[hash], gridCopy)
 		*solutions = append(*solutions, gridCopy)
-		
-		// Log the grid for debugging
-		fmt.Printf("\n✅ Unique solution #%d added:\n", len(*solutions))
-		for _, row := range gridCopy {
-			fmt.Printf("  %v\n", row)
-		}
-		
-		// Send progress update if callback is provided
+
 		if !progressCallback.IsUndefined() {
 			count := len(*solutions)
-			fmt.Printf("📊 Sending to UI: solution %d/%d\n", count, maxSolutions)
-			
-			// Convert grid to JS format
-			jsGrid := make([]interface{}, len(gridCopy))
-			for i, row := range gridCopy {
-				jsRow := make([]interface{}, len(row))
-				for j, val := range row {
-					jsRow[j] = val
-				}
-				jsGrid[i] = jsRow
-			}
-			
-			// Call JavaScript callback
+			jsGrid := gridToJS(&gridCopy)
 			progressCallback.Invoke(count, jsGrid)
 		}
-		
 		return
 	}
 
-	// Find first unused piece
 	pieceIndex := 0
-	for pieceIndex < len(rawPieces) && (usedMask&(1<<pieceIndex)) != 0 {
+	for pieceIndex < NUM_PIECES && (usedMask&(1<<pieceIndex)) != 0 {
 		pieceIndex++
 	}
 
-	for _, shape := range transformedPieces[pieceIndex] {
-		if len(*solutions) >= maxSolutions {
-			return
-		}
-		
+	shapes := transformedPieces[pieceIndex]
+	newUsedMask := usedMask | (1 << pieceIndex)
+	pieceID := pieceIndex + 1
+
+	for _, shape := range shapes {
 		for r := 0; r < ROWS; r++ {
 			for c := 0; c < COLS; c++ {
 				if canPlace(grid, shape, r, c) {
-					place(grid, shape, r, c, pieceIndex+1)
-					newUsedMask := usedMask | (1 << pieceIndex)
-					solve(grid, newUsedMask, solutions, solutionSet)
+					place(grid, shape, r, c, pieceID)
+					solve(grid, newUsedMask, solutions, solutionSet, memo, progressCallback)
 					remove(grid, shape, r, c)
-					
-					if len(*solutions) >= maxSolutions {
+					if len(*solutions) >= MAX_SOLUTIONS {
 						return
 					}
 				}
@@ -256,69 +253,50 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int, solutionSet map[str
 	}
 }
 
-// Global callback for progress updates
-var progressCallback js.Value
+func gridToJS(grid *[ROWS][COLS]int) js.Value {
+	jsGrid := js.Global().Get("Array").New(ROWS)
+	for i := 0; i < ROWS; i++ {
+		jsRow := js.Global().Get("Array").New(COLS)
+		for j := 0; j < COLS; j++ {
+			jsRow.SetIndex(j, grid[i][j])
+		}
+		jsGrid.SetIndex(i, jsRow)
+	}
+	return jsGrid
+}
 
-// WebAssembly bridge function
 func solvePuzzle(this js.Value, args []js.Value) interface{} {
 	if len(args) < 2 {
-		return map[string]interface{}{
-			"error": "Expected at least 2 arguments: month and day",
-		}
+		return map[string]interface{}{"error": "Need month and day"}
 	}
 
 	month := args[0].String()
 	day := args[1].String()
-	
-	// Optional callback for progress updates
+
+	var progressCallback js.Value
 	if len(args) >= 3 && !args[2].IsUndefined() {
 		progressCallback = args[2]
 	}
 
-	// Console logs to show Go is running
-	fmt.Printf("🚀 Go WebAssembly Solver started for %s %s\n", month, day)
-	
-	startTime := time.Now()
 	grid := initGrid(month, day)
-	solutions := make([][][]int, 0)
-	
-	// Initialize solution set for deduplication
-	solutionSet := make(map[string]bool)
-	
-	fmt.Println("🔍 Searching for unique solutions...")
-	solve(grid, 0, &solutions, solutionSet)
-	
-	elapsed := time.Since(startTime).Seconds()
-	fmt.Printf("✅ Go found %d solution(s) in %.3f seconds\n", len(solutions), elapsed)
+	solutions := make([][ROWS][COLS]int, 0, MAX_SOLUTIONS)
+	solutionSet := make(map[uint64][][ROWS][COLS]int)
+	memo := make(map[uint64]bool)
 
-	// Convert solutions to JS format
-	jsSolutions := make([]interface{}, len(solutions))
-	for i, sol := range solutions {
-		jsGrid := make([]interface{}, len(sol))
-		for j, row := range sol {
-			jsRow := make([]interface{}, len(row))
-			for k, val := range row {
-				jsRow[k] = val
-			}
-			jsGrid[j] = jsRow
-		}
-		jsSolutions[i] = jsGrid
+	solve(&grid, 0, &solutions, &solutionSet, &memo, progressCallback)
+
+	jsSolutions := js.Global().Get("Array").New(len(solutions))
+	for i := range solutions {
+		jsSolutions.SetIndex(i, gridToJS(&solutions[i]))
 	}
 
 	return map[string]interface{}{
 		"solutions": jsSolutions,
 		"count":     len(solutions),
-		"time":      fmt.Sprintf("%.3f", elapsed),
 	}
 }
 
 func main() {
-	fmt.Println("🎯 Go WebAssembly Calendar Puzzle Solver initialized!")
-	fmt.Println("⚡ Powered by Go - Finding up to 10 solutions per date")
-	
-	// Register the function to be callable from JavaScript
 	js.Global().Set("goSolvePuzzle", js.FuncOf(solvePuzzle))
-	
-	// Keep the program running
-	<-make(chan bool)
+	select {}
 }

@@ -102,12 +102,35 @@ function initGrid(month, day) {
 const MAX_SOLUTIONS = 10;
 const ALL_PIECES_MASK = (1 << rawPieces.length) - 1; // 255 for 8 pieces
 
-// Backtracking solver - find ALL solutions (no limit)
-function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
+// Convert grid to string for deduplication
+function gridToString(grid) {
+  let result = '';
+  for (let row of grid) {
+    for (let val of row) {
+      result += val + ',';
+    }
+  }
+  return result;
+}
+
+// Backtracking solver - find 10 unique solutions with deduplication
+function solve(grid, usedMask, solutions = [], solutionSet = new Set(), onSolutionFound = null) {
+  // Stop if we found enough solutions
+  if (solutions.length >= MAX_SOLUTIONS) {
+    return;
+  }
+  
   // Check if all pieces are used (bitmask comparison - O(1))
   if (usedMask === ALL_PIECES_MASK) {
-    // Found a solution! Save a copy
+    // Check for duplicate solution
+    const gridStr = gridToString(grid);
+    if (solutionSet.has(gridStr)) {
+      return; // Skip duplicate
+    }
+    
+    // Found a unique solution! Save a copy
     const solutionCopy = grid.map(row => [...row]);
+    solutionSet.add(gridStr);
     solutions.push(solutionCopy);
     
     // Call the callback to update UI
@@ -115,7 +138,7 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
       onSolutionFound(solutions.length, solutionCopy);
     }
     
-    return; // Continue searching for more solutions
+    return;
   }
 
   // Find first unused piece using bitmask
@@ -125,6 +148,10 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
   }
 
   for (let shape of transformedPieces[pieceIndex]) {
+    if (solutions.length >= MAX_SOLUTIONS) {
+      return;
+    }
+    
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (canPlace(grid, shape, r, c)) {
@@ -133,9 +160,13 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
           // Set bit for this piece (much faster than array) - O(1)
           const newUsedMask = usedMask | (1 << pieceIndex);
 
-          solve(grid, newUsedMask, solutions, onSolutionFound); // Recursive call
+          solve(grid, newUsedMask, solutions, solutionSet, onSolutionFound); // Recursive call
 
           remove(grid, shape, r, c);
+          
+          if (solutions.length >= MAX_SOLUTIONS) {
+            return;
+          }
         }
       }
     }
