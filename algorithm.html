@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Algorithm Explained - Calendar Puzzle DSA</title>
     <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -14,7 +20,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             min-height: 100vh;
             padding: 20px;
             color: #333;
@@ -30,7 +36,7 @@
         }
 
         h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -49,7 +55,7 @@
         .back-btn {
             display: inline-block;
             padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
             color: white;
             text-decoration: none;
             border-radius: 10px;
@@ -60,20 +66,20 @@
 
         .back-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 210, 255, 0.4);
         }
 
         h2 {
-            color: #667eea;
+            color: #00d2ff;
             font-size: 2em;
             margin-top: 40px;
             margin-bottom: 20px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #00d2ff;
             padding-bottom: 10px;
         }
 
         h3 {
-            color: #764ba2;
+            color: #3a7bd5;
             font-size: 1.5em;
             margin-top: 30px;
             margin-bottom: 15px;
@@ -87,11 +93,11 @@
         }
 
         .highlight {
-            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
-            border-left: 5px solid #f79d65;
+            border-left: 5px solid #00d2ff;
         }
 
         .highlight strong {
@@ -100,39 +106,68 @@
         }
 
         code {
-            background: #2d2d2d;
-            color: #f8f8f2;
+            background: #282c34;
+            color: #abb2bf;
             padding: 2px 6px;
             border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            font-family: 'Fira Code', 'Courier New', monospace;
             font-size: 0.95em;
         }
 
         pre {
-            background: #2d2d2d;
-            color: #f8f8f2;
+            background: #282c34;
             padding: 20px;
             border-radius: 10px;
             overflow-x: auto;
             margin: 20px 0;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #00d2ff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         pre code {
             background: none;
             padding: 0;
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+
+        /* Highlight.js custom tweaks */
+        .hljs {
+            background: #282c34;
+            padding: 0;
+        }
+
+        .hljs-comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .hljs-keyword {
+            color: #c678dd;
+        }
+
+        .hljs-function {
+            color: #61afef;
+        }
+
+        .hljs-string {
+            color: #98c379;
+        }
+
+        .hljs-number {
+            color: #d19a66;
         }
 
         .complexity-box {
-            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
+            border-left: 4px solid #00d2ff;
         }
 
         .complexity-box h4 {
             margin-bottom: 10px;
-            color: #5e35b1;
+            color: #2c5364;
         }
 
         ul, ol {
@@ -166,7 +201,7 @@
 
         .step-number {
             display: inline-block;
-            background: #667eea;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
             color: white;
             width: 30px;
             height: 30px;
@@ -175,6 +210,7 @@
             line-height: 30px;
             margin-right: 10px;
             font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 210, 255, 0.3);
         }
 
         @media (max-width: 768px) {
@@ -221,7 +257,7 @@
 
         <h3>1. 2D Array (Grid Representation)</h3>
         <p>The board is represented as a 7×7 matrix:</p>
-        <pre><code>const boardLayout = [
+        <pre><code class="language-javascript">const boardLayout = [
   ["JAN","FEB","MAR","APR","MAY","JUN", null],
   ["JUL","AUG","SEP","OCT","NOV","DEC", null],
   ["1","2","3","4","5","6","7"],
@@ -233,7 +269,7 @@ const grid = Array.from({ length: 7 }, () => Array(7).fill(0));
 
         <h3>2. Bitmask (Efficient State Tracking)</h3>
         <p>Instead of using an array to track which pieces are used, we use a single integer with bit flags:</p>
-        <pre><code>// Each bit represents one piece (0 = unused, 1 = used)
+        <pre><code class="language-javascript">// Each bit represents one piece (0 = unused, 1 = used)
 const ALL_PIECES_MASK = (1 << 8) - 1;  // 11111111 in binary = 255
 
 // Check if piece i is used: O(1)
@@ -246,7 +282,7 @@ usedMask = usedMask | (1 << i);
 
         <h3>3. Array of Coordinates (Piece Shapes)</h3>
         <p>Each piece is a list of relative coordinates:</p>
-        <pre><code>// L-shaped piece
+        <pre><code class="language-javascript">// L-shaped piece
 [[0,0], [1,0], [2,0], [2,1], [2,2]]
 
 // Represents:
@@ -267,24 +303,24 @@ usedMask = usedMask | (1 << i);
 
         <h3>Algorithm Steps</h3>
         <p><span class="step-number">1</span> <strong>Base Case:</strong> If all pieces are placed, we found a solution!</p>
-        <pre><code>if (usedMask === ALL_PIECES_MASK) {
+        <pre><code class="language-javascript">if (usedMask === ALL_PIECES_MASK) {
     solutions.push(gridCopy);
     return;
 }</code></pre>
 
         <p><span class="step-number">2</span> <strong>Select Next Piece:</strong> Find the first unused piece using bitmask</p>
-        <pre><code>let pieceIndex = 0;
+        <pre><code class="language-javascript">let pieceIndex = 0;
 while (usedMask & (1 << pieceIndex)) {
     pieceIndex++;  // Skip used pieces
 }</code></pre>
 
         <p><span class="step-number">3</span> <strong>Try All Orientations:</strong> For each rotation/flip of the piece</p>
-        <pre><code>for (let shape of transformedPieces[pieceIndex]) {
+        <pre><code class="language-javascript">for (let shape of transformedPieces[pieceIndex]) {
     // Try placing this orientation...
 }</code></pre>
 
         <p><span class="step-number">4</span> <strong>Try All Positions:</strong> For each cell on the board</p>
-        <pre><code>for (let r = 0; r < ROWS; r++) {
+        <pre><code class="language-javascript">for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
         if (canPlace(grid, shape, r, c)) {
             // Place piece and recurse
@@ -293,7 +329,7 @@ while (usedMask & (1 << pieceIndex)) {
 }</code></pre>
 
         <p><span class="step-number">5</span> <strong>Recursive Call:</strong> Try to place remaining pieces</p>
-        <pre><code>place(grid, shape, r, c, pieceIndex + 1);
+        <pre><code class="language-javascript">place(grid, shape, r, c, pieceIndex + 1);
 const newUsedMask = usedMask | (1 << pieceIndex);
 solve(grid, newUsedMask, solutions);
 remove(grid, shape, r, c);  // Backtrack!</code></pre>
@@ -302,20 +338,20 @@ remove(grid, shape, r, c);  // Backtrack!</code></pre>
         <h2>⚡ Key Optimizations</h2>
 
         <h3>1. Pre-compute All Transformations</h3>
-        <pre><code>// Generate 8 orientations (4 rotations × 2 flips) once
+        <pre><code class="language-javascript">// Generate 8 orientations (4 rotations × 2 flips) once
 const transformedPieces = rawPieces.map(piece => {
     return getTransforms(piece);  // Returns all valid orientations
 });</code></pre>
 
         <h3>2. Early Termination</h3>
-        <pre><code>if (solutions.length >= MAX_SOLUTIONS) return;  // Stop at 10 solutions</code></pre>
+        <pre><code class="language-javascript">if (solutions.length >= MAX_SOLUTIONS) return;  // Stop at 10 solutions</code></pre>
 
         <h3>3. Bitmask Instead of Array</h3>
         <p>Using integer bitmasks is <strong>10x faster</strong> than boolean arrays for checking/updating piece usage.</p>
 
         <h3>4. Web Workers (Concurrency)</h3>
         <p>Run the heavy computation in a background thread so the UI doesn't freeze:</p>
-        <pre><code>const worker = new Worker('calendar-puzzle-worker.js');
+        <pre><code class="language-javascript">const worker = new Worker('calendar-puzzle-worker.js');
 worker.postMessage({ month, day });
 worker.onmessage = (e) => { /* Update UI */ };</code></pre>
 
@@ -358,7 +394,7 @@ worker.onmessage = (e) => { /* Update UI */ };</code></pre>
         <h2>🔄 How Piece Transformations Work</h2>
         
         <h3>Rotation (90° clockwise)</h3>
-        <pre><code>function rotate(shape) {
+        <pre><code class="language-javascript">function rotate(shape) {
     // Transform: (row, col) → (col, -row)
     return shape.map(([r, c]) => [c, -r]);
 }
@@ -368,14 +404,14 @@ worker.onmessage = (e) => { /* Update UI */ };</code></pre>
 // After:   [[0,0], [0,1], [0,2]]</code></pre>
 
         <h3>Normalization (Move to origin)</h3>
-        <pre><code>function normalize(shape) {
+        <pre><code class="language-javascript">function normalize(shape) {
     const minR = Math.min(...shape.map(p => p[0]));
     const minC = Math.min(...shape.map(p => p[1]));
     return shape.map(([r, c]) => [r - minR, c - minC]);
 }</code></pre>
 
         <h3>Generating All Orientations</h3>
-        <pre><code>function getTransforms(shape) {
+        <pre><code class="language-javascript">function getTransforms(shape) {
     const forms = new Set();
     let s = shape;
     
@@ -394,7 +430,7 @@ worker.onmessage = (e) => { /* Update UI */ };</code></pre>
         <h2>🎯 Placement Validation</h2>
         <p>Before placing a piece, we check three conditions:</p>
         
-        <pre><code>function canPlace(grid, shape, r, c) {
+        <pre><code class="language-javascript">function canPlace(grid, shape, r, c) {
     for (let [dr, dc] of shape) {
         const nr = r + dr;
         const nc = c + dc;
@@ -439,5 +475,10 @@ worker.onmessage = (e) => { /* Update UI */ };</code></pre>
         <br><br>
         <a href="index.html" class="back-btn">← Back to Puzzle</a>
     </div>
+
+    <script>
+        // Initialize syntax highlighting
+        hljs.highlightAll();
+    </script>
 </body>
 </html>
