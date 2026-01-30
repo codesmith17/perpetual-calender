@@ -720,38 +720,40 @@
                 max-width: 180px;
             }
 
+            .board-container {
+                padding: 0 8px;
+                margin: 20px 0;
+            }
+
             .cell {
-                width: 45px;
-                height: 45px;
-                font-size: 11px;
+                width: 42px;
+                height: 42px;
+                font-size: 10px;
                 padding: 2px;
+                border-radius: 10px;
             }
 
             .cell.available,
             .cell.target {
-                font-size: 10px;
+                font-size: 9px;
             }
 
             .cell.piece {
-                font-size: 13px;
+                font-size: 12px;
             }
 
             .board {
                 padding: 10px;
-                gap: 2px;
-            }
-
-            .board {
-                padding: 12px;
-                padding-bottom: 55px;
+                padding-bottom: 50px;
+                gap: 3px;
                 border-radius: 16px;
             }
 
             .board::after {
-                font-size: 32px;
-                bottom: 10px;
-                right: 15px;
-                letter-spacing: 4px;
+                font-size: 28px;
+                bottom: 8px;
+                right: 12px;
+                letter-spacing: 3px;
             }
 
             .legend {
@@ -800,11 +802,17 @@
                 font-size: 1.4em;
             }
 
+            .board-container {
+                padding: 0 4px;
+                margin: 16px 0;
+            }
+
             .cell {
-                width: 40px;
-                height: 40px;
+                width: 38px;
+                height: 38px;
                 font-size: 9px;
                 padding: 1px;
+                border-radius: 8px;
             }
 
             .cell.available,
@@ -817,21 +825,30 @@
             }
 
             .board {
-                padding: 10px;
+                padding: 8px;
                 padding-bottom: 45px;
                 border-radius: 14px;
+                gap: 2px;
             }
 
             .board::after {
                 font-size: 24px;
-                letter-spacing: 3px;
+                letter-spacing: 2px;
                 bottom: 6px;
                 right: 10px;
             }
 
-            select, button {
+            select {
+                min-width: 110px;
+                font-size: 14px;
+                padding: 10px 14px;
+                padding-right: 35px;
+            }
+
+            button {
                 font-size: 13px;
-                padding: 8px 12px;
+                padding: 10px 16px;
+                min-width: 120px;
             }
 
             .legend {
