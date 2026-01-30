@@ -178,14 +178,7 @@ func gridHash(grid *[ROWS][COLS]int, usedMask int) uint64 {
 }
 
 func gridsEqual(g1, g2 *[ROWS][COLS]int) bool {
-	for r := 0; r < ROWS; r++ {
-		for c := 0; c < COLS; c++ {
-			if g1[r][c] != g2[r][c] {
-				return false
-			}
-		}
-	}
-	return true
+	return *g1 == *g2
 }
 
 const allPiecesMask = (1 << NUM_PIECES) - 1
