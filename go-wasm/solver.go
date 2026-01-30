@@ -165,6 +165,19 @@ const (
 	maxSolutions  = 10             // Find up to 10 solutions
 )
 
+// Convert grid to string for deduplication
+func gridToString(grid [][]int) string {
+	var result string
+	for _, row := range grid {
+		for _, val := range row {
+			result += fmt.Sprintf("%d,", val)
+		}
+	}
+	return result
+}
+
+var solutionSet map[string]bool
+
 func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 	// Stop if we found enough solutions
 	if len(*solutions) >= maxSolutions {
@@ -173,13 +186,20 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 	
 	// Check if all pieces are used
 	if usedMask == allPiecesMask {
+		// Check for duplicate solution
+		gridStr := gridToString(grid)
+		if solutionSet[gridStr] {
+			return // Skip duplicate
+		}
+		
 		gridCopy := copyGrid(grid)
+		solutionSet[gridStr] = true
 		*solutions = append(*solutions, gridCopy)
 		
 		// Send progress update if callback is provided
 		if !progressCallback.IsUndefined() {
 			count := len(*solutions)
-			fmt.Printf("📊 Found solution %d/%d\n", count, maxSolutions)
+			fmt.Printf("📊 Found unique solution %d/%d\n", count, maxSolutions)
 			
 			// Convert grid to JS format
 			jsGrid := make([]interface{}, len(gridCopy))
@@ -252,7 +272,10 @@ func solvePuzzle(this js.Value, args []js.Value) interface{} {
 	grid := initGrid(month, day)
 	solutions := make([][][]int, 0)
 	
-	fmt.Println("🔍 Searching for solutions...")
+	// Initialize solution set for deduplication
+	solutionSet = make(map[string]bool)
+	
+	fmt.Println("🔍 Searching for unique solutions...")
 	solve(grid, 0, &solutions)
 	
 	elapsed := time.Since(startTime).Seconds()
