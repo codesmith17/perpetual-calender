@@ -96,8 +96,8 @@
         }
 
         select, button {
-            padding: 13px 26px;
-            font-size: 15px;
+            padding: 14px 28px;
+            font-size: 16px;
             font-family: 'Poppins', sans-serif;
             border: none;
             border-radius: 16px;
@@ -107,16 +107,41 @@
         }
 
         select {
-            background: white;
+            background: linear-gradient(145deg, #ffffff 0%, #f8f5f0 100%);
             color: #5d4e37;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(160, 130, 109, 0.2);
+            box-shadow: 
+                0 4px 15px rgba(139, 111, 71, 0.15),
+                inset 0 1px 2px rgba(255, 255, 255, 0.9),
+                inset 0 -2px 4px rgba(139, 111, 71, 0.1);
+            border: 2px solid rgba(160, 130, 109, 0.3);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: 
+                linear-gradient(145deg, #ffffff 0%, #f8f5f0 100%),
+                url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238b6f47' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center, right 15px center;
+            padding-right: 45px;
+            min-width: 140px;
         }
 
         select:hover {
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-            border-color: rgba(160, 130, 109, 0.4);
+            box-shadow: 
+                0 6px 20px rgba(139, 111, 71, 0.2),
+                inset 0 1px 2px rgba(255, 255, 255, 1),
+                inset 0 -2px 4px rgba(139, 111, 71, 0.15);
+            border-color: rgba(160, 130, 109, 0.5);
+            transform: translateY(-2px);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #a0826d;
+            box-shadow: 
+                0 8px 25px rgba(139, 111, 71, 0.25),
+                0 0 0 3px rgba(160, 130, 109, 0.2),
+                inset 0 1px 2px rgba(255, 255, 255, 1);
         }
 
         button {
@@ -959,6 +984,6 @@
         </div>
     </div>
 
-    <script src="calendar-puzzle-solver-web.js?v=13"></script>
+    <script src="calendar-puzzle-solver-web.js?v=14"></script>
 </body>
 </html>
