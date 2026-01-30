@@ -279,9 +279,6 @@ function solvePuzzleUI(month, day) {
         // Update status with current count for subsequent solutions
         showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
       }
-      
-      // Console log for debugging
-      console.log(`Solution #${count}:`, solution);
     }
     else if (type === 'complete') {
       // Remove rotation animation
