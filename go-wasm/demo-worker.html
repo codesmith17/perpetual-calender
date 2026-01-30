@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go WebAssembly Calendar Puzzle Solver (Worker)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .badge.fast {
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+        }
+
+        .badge.worker {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        select, button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        select:hover, button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #fbbf24;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 2px solid #3b82f6;
+        }
+
+        .results {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .result-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(146, 64, 14, 0.3);
+            border-top-color: #92400e;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗓️ Calendar Puzzle Solver</h1>
+        <div class="subtitle">
+            <span class="badge">⚡ Powered by Go WebAssembly</span>
+            <span class="badge worker">🔧 Web Worker Mode</span>
+            <span class="badge fast">🎯 Fast: 1 Solution</span>
+        </div>
+
+        <div id="wasmStatus" class="status info">
+            <span class="spinner"></span> Loading WebAssembly in worker thread...
+        </div>
+
+        <div class="controls">
+            <select id="monthSelect">
+                <option value="JAN">January</option>
+                <option value="FEB">February</option>
+                <option value="MAR">March</option>
+                <option value="APR">April</option>
+                <option value="MAY">May</option>
+                <option value="JUN">June</option>
+                <option value="JUL">July</option>
+                <option value="AUG">August</option>
+                <option value="SEP">September</option>
+                <option value="OCT">October</option>
+                <option value="NOV">November</option>
+                <option value="DEC">December</option>
+            </select>
+
+            <select id="daySelect">
+                <!-- Will be populated by JS -->
+            </select>
+
+            <button id="solveBtn" onclick="solvePuzzle()" disabled>🔍 Solve Puzzle</button>
+            <button id="todayBtn" onclick="setToday()" disabled>📅 Today's Date</button>
+        </div>
+
+        <div id="results" class="results hidden">
+            <div class="result-row">
+                <span class="result-label">📊 Solutions Found:</span>
+                <span class="result-value" id="solutionCount">-</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">⏱️ Computation Time:</span>
+                <span class="result-value" id="computeTime">-</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">🗓️ Date:</span>
+                <span class="result-value" id="solvedDate">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let wasmWorker = null;
+        let wasmReady = false;
+
+        // Initialize day dropdown
+        function populateDays(maxDays = 31) {
+            const daySelect = document.getElementById('daySelect');
+            daySelect.innerHTML = '';
+            for (let i = 1; i <= maxDays; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                daySelect.appendChild(option);
+            }
+        }
+
+        // Set today's date
+        function setToday() {
+            const today = new Date();
+            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+            document.getElementById('monthSelect').value = months[today.getMonth()];
+            document.getElementById('daySelect').value = today.getDate();
+        }
+
+        // Solve puzzle
+        function solvePuzzle() {
+            if (!wasmReady) {
+                showStatus('⚠️ WebAssembly not ready yet', 'error');
+                return;
+            }
+
+            const month = document.getElementById('monthSelect').value;
+            const day = document.getElementById('daySelect').value;
+
+            showStatus('🔍 Solving puzzle in background...', 'loading');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('solveBtn').disabled = true;
+
+            // Send message to worker
+            wasmWorker.postMessage({ type: 'solve', month, day });
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('wasmStatus');
+            status.className = `status ${type}`;
+            status.innerHTML = type === 'loading' 
+                ? `<span class="spinner"></span> ${message}`
+                : message;
+        }
+
+        // Initialize Web Worker
+        function initWorker() {
+            showStatus('Loading WebAssembly in worker thread...', 'loading');
+            
+            try {
+                wasmWorker = new Worker('wasm-worker.js');
+                
+                // Listen for messages from worker
+                wasmWorker.onmessage = function(event) {
+                    const { type, message, solutions, count, time } = event.data;
+                    
+                    if (type === 'ready') {
+                        wasmReady = true;
+                        showStatus('✅ WebAssembly ready! UI stays responsive during solving.', 'success');
+                        document.getElementById('solveBtn').disabled = false;
+                        document.getElementById('todayBtn').disabled = false;
+                    }
+                    else if (type === 'started') {
+                        showStatus('🔍 Solving puzzle in background...', 'loading');
+                    }
+                    else if (type === 'complete') {
+                        const monthSelect = document.getElementById('monthSelect');
+                        const daySelect = document.getElementById('daySelect');
+                        const month = monthSelect.value;
+                        const day = daySelect.value;
+                        
+                        const monthNames = {
+                            JAN: "January", FEB: "February", MAR: "March", APR: "April",
+                            MAY: "May", JUN: "June", JUL: "July", AUG: "August",
+                            SEP: "September", OCT: "October", NOV: "November", DEC: "December"
+                        };
+
+                        document.getElementById('solutionCount').textContent = count;
+                        document.getElementById('computeTime').textContent = time + 's';
+                        document.getElementById('solvedDate').textContent = `${monthNames[month]} ${day}`;
+                        document.getElementById('results').classList.remove('hidden');
+
+                        showStatus(`✅ Found ${count} solution${count !== 1 ? 's' : ''} in ${time}s!`, 'success');
+                        document.getElementById('solveBtn').disabled = false;
+                    }
+                    else if (type === 'error') {
+                        showStatus('❌ Error: ' + message, 'error');
+                        document.getElementById('solveBtn').disabled = false;
+                    }
+                };
+                
+                wasmWorker.onerror = function(error) {
+                    showStatus('❌ Worker error: ' + error.message, 'error');
+                    console.error('Worker error:', error);
+                };
+                
+                // Initialize the worker
+                wasmWorker.postMessage({ type: 'init' });
+                
+            } catch (error) {
+                showStatus('❌ Failed to create worker: ' + error.message, 'error');
+                console.error('Worker creation error:', error);
+            }
+        }
+
+        // Initialize
+        populateDays();
+        setToday();
+        initWorker();
+    </script>
+</body>
+</html>

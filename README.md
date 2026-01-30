@@ -17,11 +17,12 @@ The perpetual calendar puzzle is a spatial logic puzzle where:
 ## ✨ Features
 
 - 🎨 **Beautiful UI**: Modern, responsive design with smooth animations
-- ⚡ **Fast Solver**: Backtracking algorithm with memoization
+- ⚡ **Blazing Fast**: Powered by Go WebAssembly for maximum performance
 - 💾 **Smart Caching**: LocalStorage caching for instant repeated lookups
 - 🎯 **Any Date**: Solve for any date (past, present, or future)
 - 📱 **Responsive**: Works perfectly on desktop, tablet, and mobile
 - 🌈 **Color-Coded**: Each puzzle piece has a unique color
+- 🔧 **Web Worker**: Non-blocking background computation
 
 ## 🚀 Quick Start
 
@@ -60,7 +61,14 @@ The solver uses a **backtracking algorithm** with several optimizations:
 ```
 perpetual-calendar/
 ├── index.html                      # Main HTML interface
-├── calendar-puzzle-solver-web.js  # Solver algorithm & UI logic
+├── calendar-puzzle-solver-web.js  # UI logic and board rendering
+├── calendar-puzzle-worker.js      # Web Worker (calls Go WASM)
+├── solver.wasm                    # Go WebAssembly solver (generated)
+├── wasm_exec.js                   # Go WASM runtime support
+├── go-wasm/                       # Go source code
+│   ├── solver.go                  # Go solver implementation
+│   ├── build.sh                   # Build script
+│   └── README.md                  # Go WASM documentation
 └── README.md                      # This file
 ```
 
@@ -81,10 +89,12 @@ Total: 41 blocks to cover 41 cells (leaving 2 visible for month + date)
 
 ## 🔧 Technical Details
 
-- **Language**: Pure JavaScript (ES6+)
-- **No Dependencies**: No external libraries required
-- **Browser Support**: Modern browsers (Chrome, Firefox, Safari, Edge)
+- **Frontend**: Pure JavaScript (ES6+) with modern CSS
+- **Solver Engine**: Go compiled to WebAssembly for maximum performance
+- **No Dependencies**: Standalone application, no external libraries
+- **Browser Support**: Modern browsers with WebAssembly support (Chrome, Firefox, Safari, Edge)
 - **Storage**: LocalStorage for solution caching
+- **Architecture**: Web Worker for non-blocking computation
 
 ## 🎓 Algorithm Complexity
 

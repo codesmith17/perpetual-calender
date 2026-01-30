@@ -1,0 +1,5 @@
+# Compiled binaries
+solver.wasm
+
+# WebAssembly support file (copied from Go)
+wasm_exec.js

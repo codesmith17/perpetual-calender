@@ -102,11 +102,8 @@ function initGrid(month, day) {
 const MAX_SOLUTIONS = 10;
 const ALL_PIECES_MASK = (1 << rawPieces.length) - 1; // 255 for 8 pieces
 
-// Backtracking solver - find up to MAX_SOLUTIONS
+// Backtracking solver - find ALL solutions (no limit)
 function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
-  // Stop if we found enough solutions
-  if (solutions.length >= MAX_SOLUTIONS) return;
-  
   // Check if all pieces are used (bitmask comparison - O(1))
   if (usedMask === ALL_PIECES_MASK) {
     // Found a solution! Save a copy
@@ -128,9 +125,6 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
   }
 
   for (let shape of transformedPieces[pieceIndex]) {
-    // Early exit if we have enough solutions
-    if (solutions.length >= MAX_SOLUTIONS) return;
-    
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (canPlace(grid, shape, r, c)) {
@@ -142,9 +136,6 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
           solve(grid, newUsedMask, solutions, onSolutionFound); // Recursive call
 
           remove(grid, shape, r, c);
-          
-          // Early exit check
-          if (solutions.length >= MAX_SOLUTIONS) return;
         }
       }
     }

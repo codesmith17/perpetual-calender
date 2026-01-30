@@ -1,0 +1,20 @@
+# WebAssembly compiled files (generated from go-wasm/)
+solver.wasm
+solver-tiny.wasm
+
+# Go WASM support file (copied from Go installation)
+wasm_exec.js
+
+# Node modules (if any)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

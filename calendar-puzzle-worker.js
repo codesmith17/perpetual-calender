@@ -1,76 +1,105 @@
 // ============================================
-// WEB WORKER - PUZZLE SOLVER
+// WEB WORKER - GO WEBASSEMBLY PUZZLE SOLVER
 // Runs in background thread, doesn't block UI
 // ============================================
 
-// Import shared puzzle logic
-importScripts('puzzle-core.js');
+// Import Go WebAssembly support
+importScripts('wasm_exec.js');
 
-// Wrapper for solve that sends progress updates
-function solveWithProgress(grid, usedMask, solutions = []) {
-  // Stop if we found enough solutions
-  if (solutions.length >= MAX_SOLUTIONS) return;
-  
-  // Check if all pieces are used
-  if (usedMask === ALL_PIECES_MASK) {
-    const solutionCopy = grid.map(row => [...row]);
-    solutions.push(solutionCopy);
-    
-    // Send progress update to main thread
-    self.postMessage({
-      type: 'progress',
-      count: solutions.length,
-      solution: solutionCopy
-    });
-    
-    return;
-  }
+let wasmReady = false;
+let goInstance = null;
 
-  // Find first unused piece
-  let pieceIndex = 0;
-  while (pieceIndex < rawPieces.length && (usedMask & (1 << pieceIndex))) {
-    pieceIndex++;
-  }
-
-  for (let shape of transformedPieces[pieceIndex]) {
-    if (solutions.length >= MAX_SOLUTIONS) return;
-    
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        if (canPlace(grid, shape, r, c)) {
-          place(grid, shape, r, c, pieceIndex + 1);
-          const newUsedMask = usedMask | (1 << pieceIndex);
-          solveWithProgress(grid, newUsedMask, solutions);
-          remove(grid, shape, r, c);
-          if (solutions.length >= MAX_SOLUTIONS) return;
-        }
-      }
+// Initialize Go WebAssembly
+async function initWasm() {
+    try {
+        const go = new Go();
+        const result = await WebAssembly.instantiateStreaming(
+            fetch('solver.wasm'),
+            go.importObject
+        );
+        
+        // Run Go program
+        go.run(result.instance);
+        goInstance = result.instance;
+        
+        // Wait for Go to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        wasmReady = true;
+        self.postMessage({ type: 'initialized' });
+    } catch (error) {
+        console.error('WASM initialization error:', error);
+        self.postMessage({ 
+            type: 'error', 
+            message: 'Failed to load WebAssembly: ' + error.message 
+        });
     }
-  }
 }
 
 // Listen for messages from main thread
-self.addEventListener('message', (event) => {
-  const { month, day } = event.data;
-  
-  // Send acknowledgment
-  self.postMessage({ type: 'started' });
-  
-  const startTime = Date.now();
-  const grid = initGrid(month, day);
-  const solutions = [];
-  
-  // Solve the puzzle
-  solveWithProgress(grid, 0, solutions);
-  
-  const endTime = Date.now();
-  const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
-  
-  // Send final result
-  self.postMessage({
-    type: 'complete',
-    solutions: solutions,
-    count: solutions.length,
-    time: timeTaken
-  });
+self.addEventListener('message', async (event) => {
+    const { month, day } = event.data;
+    
+    // Initialize WASM on first call
+    if (!wasmReady && !goInstance) {
+        await initWasm();
+    }
+    
+    if (!wasmReady) {
+        self.postMessage({ 
+            type: 'error', 
+            message: 'WebAssembly not ready yet' 
+        });
+        return;
+    }
+    
+    try {
+        // Send acknowledgment
+        self.postMessage({ type: 'started' });
+        
+        const startTime = Date.now();
+        
+        // Call Go function
+        const result = goSolvePuzzle(month, day);
+        
+        const endTime = Date.now();
+        const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+        
+        if (result.error) {
+            self.postMessage({ 
+                type: 'complete',
+                solutions: [],
+                count: 0,
+                time: timeTaken
+            });
+        } else {
+            // Send progress update with first solution
+            if (result.count > 0) {
+                self.postMessage({
+                    type: 'progress',
+                    count: result.count,
+                    solution: result.solutions[0]
+                });
+            }
+            
+            // Send final result
+            self.postMessage({
+                type: 'complete',
+                solutions: result.solutions,
+                count: result.count,
+                time: timeTaken
+            });
+        }
+    } catch (error) {
+        console.error('Solving error:', error);
+        self.postMessage({ 
+            type: 'complete',
+            solutions: [],
+            count: 0,
+            time: '0'
+        });
+    }
 });
+
+// Auto-initialize on worker startup
+initWasm();
