@@ -189,12 +189,19 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 		// Check for duplicate solution
 		gridStr := gridToString(grid)
 		if solutionSet[gridStr] {
+			fmt.Println("⚠️  Skipping duplicate solution")
 			return // Skip duplicate
 		}
 		
 		gridCopy := copyGrid(grid)
 		solutionSet[gridStr] = true
 		*solutions = append(*solutions, gridCopy)
+		
+		// Log the grid for debugging
+		fmt.Printf("\n✅ Solution #%d:\n", len(*solutions))
+		for _, row := range gridCopy {
+			fmt.Printf("  %v\n", row)
+		}
 		
 		// Send progress update if callback is provided
 		if !progressCallback.IsUndefined() {
