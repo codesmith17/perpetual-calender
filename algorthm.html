@@ -6,10 +6,9 @@
     <title>Algorithm Explained - Calendar Puzzle DSA</title>
     <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- Highlight.js for syntax highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <!-- Highlight.js for syntax highlighting (local files) -->
+    <link rel="stylesheet" href="atom-one-dark.min.css">
+    <script src="highlight.min.js"></script>
     
     <style>
         * {
@@ -588,16 +587,126 @@ worker.onmessage = (e) => { /* Update UI */ };</code></pre>
         <p>Each puzzle piece can be rotated and flipped to create different orientations. Understanding how coordinates transform is crucial for the solver to try all possibilities.</p>
 
         <h3>Rotation (90° clockwise)</h3>
-        <p>When we rotate a shape 90° clockwise, each coordinate (row, col) transforms to (col, -row). This is a standard 2D rotation formula.</p>
+        <p>When we rotate a shape 90° clockwise, each coordinate (row, col) transforms to (col, -row). This is a standard 2D rotation formula derived from rotation matrices in linear algebra.</p>
+
+        <div class="visual-demo">
+            <h4>Why (r, c) → (c, -r)? The Math Behind It</h4>
+            <div style="text-align: center; color: #e0e0e0; font-family: monospace;">
+                <div style="max-width: 600px; margin: 0 auto; text-align: left;">
+                    <p style="color: #00d2ff; font-size: 1.1em; margin-bottom: 15px;">Imagine a coordinate grid:</p>
+                    <pre style="background: #1a1a1a; padding: 20px; line-height: 1.8;">
+     c (columns) →
+r    0   1   2   3
+↓    
+0    •   •   •   •
+1    •   █   •   •    ← Point at (1, 1)
+2    •   •   •   •
+3    •   •   •   •
+</pre>
+                    <p style="color: #aaa; margin: 15px 0;">When we rotate 90° <strong>clockwise</strong>:</p>
+                    <pre style="background: #1a1a1a; padding: 20px; line-height: 1.8;">
+     c (columns) →
+r    0   1   2   3
+↓    
+0    •   •   •   •
+1    •   •   █   •    ← Point now at (1, 2)
+2    •   •   •   •
+3    •   •   •   •
+
+Original: (row=1, col=1)
+After:    (row=1, col=2) = (old_col, ???)
+</pre>
+                    <p style="color: #2ed573; font-size: 1.1em; margin: 15px 0;"><strong>Notice:</strong> new_col increases as old_row <strong>decreases</strong></p>
+                    <p style="color: #00d2ff;">That's why we need <strong>-row</strong> (the negative flips the direction)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-box">
+            <p><strong>The Formula: (r, c) → (c, -r)</strong></p>
+            <p><strong>Why "c" for new row?</strong> A point that was far to the right (high column) moves to the bottom (high row)</p>
+            <p><strong>Why "-r" for new column?</strong> A point that was at the top (low row) moves to the right (high column). The negative flips the direction!</p>
+            <p><strong>Example:</strong> Point (2, 1) means row 2, column 1</p>
+            <ul style="margin-left: 20px; color: #e0e0e0;">
+                <li>After rotation: (1, -2) = (col=1 becomes new_row, -row=-2 becomes new_col)</li>
+                <li>But wait... negative column? That's where normalization comes in!</li>
+            </ul>
+        </div>
         
         <pre><code class="language-javascript">function rotate(shape) {
     // Transform: (row, col) → (col, -row)
     return shape.map(([r, c]) => [c, -r]);
 }
 
-// Example: L-shape
-// Before:  [[0,0], [1,0], [2,0]]
-// After:   [[0,0], [0,1], [0,2]]</code></pre>
+// Example with actual numbers - SEE THE NEGATIVES!
+const piece = [[0,0], [1,0], [2,0]];  // Vertical line
+
+const rotated = rotate(piece);
+console.log(rotated);
+// Output: [[0,0], [0,-1], [0,-2]]  ← NEGATIVE COLUMNS!
+//                    ↑      ↑
+//         These negatives come from -row
+
+// That's why we MUST normalize next!</code></pre>
+
+        <div class="visual-demo">
+            <h4>Step-by-Step: Rotation Creates Negatives</h4>
+            <div style="text-align: center;">
+                <div class="grid-visual">
+                    <h5>Original Piece</h5>
+                    <div class="mini-grid" style="grid-template-columns: repeat(3, 35px);">
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell empty"></div>
+                    </div>
+                    <p style="color: #aaa; font-size: 0.85em; margin-top: 10px;">[[0,0], [1,0], [2,0]]</p>
+                </div>
+
+                <span class="arrow">→</span>
+
+                <div class="grid-visual">
+                    <h5>After rotate()</h5>
+                    <div style="color: #ff4757; font-weight: bold; margin-bottom: 10px;">HAS NEGATIVES!</div>
+                    <div style="font-family: monospace; font-size: 0.9em; background: #1a1a1a; padding: 15px; border-radius: 8px; text-align: left;">
+                        <div style="color: #00d2ff;">[[0, 0],</div>
+                        <div style="color: #ff4757;"> [0, -1],  ← Negative!</div>
+                        <div style="color: #ff4757;"> [0, -2]]  ← Negative!</div>
+                    </div>
+                    <p style="color: #aaa; font-size: 0.85em; margin-top: 10px;">Can't use negatives on board!</p>
+                </div>
+
+                <span class="arrow">→</span>
+
+                <div class="grid-visual">
+                    <h5>After normalize()</h5>
+                    <div style="color: #2ed573; font-weight: bold; margin-bottom: 10px;">NO NEGATIVES!</div>
+                    <div class="mini-grid" style="grid-template-columns: repeat(3, 35px);">
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell piece">█</div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell empty"></div>
+                        <div class="mini-cell empty"></div>
+                    </div>
+                    <p style="color: #aaa; font-size: 0.85em; margin-top: 10px;">[[0,0], [0,1], [0,2]]</p>
+                    <p style="color: #2ed573; font-size: 0.9em;">Shifted by +2 in columns!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-box">
+            <p><strong>Why You Don't See Negatives in Final Output:</strong></p>
+            <p>1️⃣ <strong>rotate()</strong> creates negative coordinates (from the -r in formula)</p>
+            <p>2️⃣ <strong>normalize()</strong> immediately shifts everything to remove negatives</p>
+            <p>3️⃣ The final shape always starts at (0, 0) with no negative values</p>
+            <p><strong>Analogy:</strong> It's like taking a photo of a rotated object, then cropping it so the object starts at the top-left corner. The negatives are temporary!</p>
+        </div>
 
         <div class="visual-demo">
             <h4>Visual Example: Rotating an L-Piece</h4>
