@@ -82,17 +82,8 @@ function remove(grid, shape, r, c) {
   }
 }
 
-// Optimized memoization with object (faster than Map on phones)
-let memo = {};
-let memoSize = 0;
-const MAX_MEMO_SIZE = 100000; // Limit memo to prevent memory explosion
-
-function serializeState(grid, usedMask) {
-  // Flatten grid and combine with bitmask for fast key
-  return grid.flat().join(',') + '|' + usedMask;
-}
-
 // Backtracking solver - find up to MAX_SOLUTIONS
+// No memoization - for finding just 10 solutions, memo overhead > benefit
 const MAX_SOLUTIONS = 10;
 const ALL_PIECES_MASK = (1 << rawPieces.length) - 1; // 255 for 8 pieces
 
@@ -113,10 +104,6 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
     
     return; // Continue searching for more solutions
   }
-
-  // Check memoization - O(1) object lookup
-  const stateKey = serializeState(grid, usedMask);
-  if (memo[stateKey]) return;
 
   // Find first unused piece using bitmask - O(n) but n=8
   let pieceIndex = 0;
@@ -145,12 +132,6 @@ function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
         }
       }
     }
-  }
-
-  // Add to memo only if size is under limit
-  if (memoSize < MAX_MEMO_SIZE) {
-    memo[stateKey] = true;
-    memoSize++;
   }
 }
 
@@ -360,6 +341,9 @@ function showStatus(message, type) {
   statusElement.className = `status ${type}`;
 }
 
+// Web Worker for background computation
+let puzzleWorker = null;
+
 function solvePuzzleUI(month, day) {
   // Reset board immediately to show the new target date
   const grid = initGrid(month, day);
@@ -389,50 +373,68 @@ function solvePuzzleUI(month, day) {
   }
 
   showStatus('🔄 Finding solutions...', 'solving');
-
-  // Clear memoization for fresh solve
-  memo = {};
-  memoSize = 0;
   
   allSolutions = [];
   currentSolutionIndex = 0;
-  // Start with bitmask 0 (no pieces used)
-  const usedMask = 0;
 
-  const startTime = Date.now();
+  // Terminate existing worker if any
+  if (puzzleWorker) {
+    puzzleWorker.terminate();
+  }
 
-  // Use setTimeout to allow UI to update
-  setTimeout(() => {
-    // Callback to update UI as solutions are found
-    const onSolutionFound = (count, solution) => {
-      // Render the first solution immediately
+  // Create new Web Worker
+  puzzleWorker = new Worker('calendar-puzzle-worker.js');
+
+  // Listen for messages from worker
+  puzzleWorker.onmessage = function(event) {
+    const { type, count, solution, solutions, time } = event.data;
+
+    if (type === 'started') {
+      showStatus('🔄 Finding solutions...', 'solving');
+    }
+    else if (type === 'progress') {
+      // Real-time progress updates
       if (count === 1) {
         renderBoard(solution);
       }
-      
-      // Update status with current count
       showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
-    };
-    
-    solve(grid, usedMask, allSolutions, onSolutionFound);
-    const endTime = Date.now();
-    const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
-
-    // Remove rotation animation
-    boardElement.classList.remove('solving');
-
-    if (allSolutions.length > 0) {
-      // Save all solutions to cache
-      saveSolutionToCache(month, day, allSolutions, timeTaken);
-      renderBoard(allSolutions[0]);
-      updateSolutionNavigation(allSolutions.length, timeTaken);
-      showStatus(`✅ Found ${allSolutions.length} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
-    } else {
-      renderBoard(initGrid(month, day));
-      showStatus(`❌ No solution found (searched for ${timeTaken} seconds)`, 'error');
-      hideSolutionNavigation();
     }
-  }, 100);
+    else if (type === 'complete') {
+      // Remove rotation animation
+      boardElement.classList.remove('solving');
+
+      if (solutions.length > 0) {
+        allSolutions = solutions;
+        currentSolutionIndex = 0;
+        
+        // Save all solutions to cache
+        saveSolutionToCache(month, day, solutions, time);
+        renderBoard(solutions[0]);
+        updateSolutionNavigation(solutions.length, time);
+        showStatus(`✅ Found ${solutions.length} solution${solutions.length > 1 ? 's' : ''} in ${time}s!`, 'success');
+      } else {
+        renderBoard(initGrid(month, day));
+        showStatus(`❌ No solution found (searched for ${time} seconds)`, 'error');
+        hideSolutionNavigation();
+      }
+
+      // Clean up worker
+      puzzleWorker.terminate();
+      puzzleWorker = null;
+    }
+  };
+
+  // Handle worker errors
+  puzzleWorker.onerror = function(error) {
+    console.error('Worker error:', error);
+    boardElement.classList.remove('solving');
+    showStatus('❌ Error during solving. Please try again.', 'error');
+    puzzleWorker.terminate();
+    puzzleWorker = null;
+  };
+
+  // Send message to worker to start solving
+  puzzleWorker.postMessage({ month, day });
 }
 
 function updateSolutionNavigation(count, time) {
