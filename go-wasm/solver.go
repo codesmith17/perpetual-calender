@@ -173,7 +173,28 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 	
 	// Check if all pieces are used
 	if usedMask == allPiecesMask {
-		*solutions = append(*solutions, copyGrid(grid))
+		gridCopy := copyGrid(grid)
+		*solutions = append(*solutions, gridCopy)
+		
+		// Send progress update if callback is provided
+		if !progressCallback.IsUndefined() {
+			count := len(*solutions)
+			fmt.Printf("📊 Found solution %d/%d\n", count, maxSolutions)
+			
+			// Convert grid to JS format
+			jsGrid := make([]interface{}, len(gridCopy))
+			for i, row := range gridCopy {
+				jsRow := make([]interface{}, len(row))
+				for j, val := range row {
+					jsRow[j] = val
+				}
+				jsGrid[i] = jsRow
+			}
+			
+			// Call JavaScript callback
+			progressCallback.Invoke(count, jsGrid)
+		}
+		
 		return
 	}
 
@@ -205,16 +226,24 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 	}
 }
 
+// Global callback for progress updates
+var progressCallback js.Value
+
 // WebAssembly bridge function
 func solvePuzzle(this js.Value, args []js.Value) interface{} {
-	if len(args) != 2 {
+	if len(args) < 2 {
 		return map[string]interface{}{
-			"error": "Expected 2 arguments: month and day",
+			"error": "Expected at least 2 arguments: month and day",
 		}
 	}
 
 	month := args[0].String()
 	day := args[1].String()
+	
+	// Optional callback for progress updates
+	if len(args) >= 3 && !args[2].IsUndefined() {
+		progressCallback = args[2]
+	}
 
 	// Console logs to show Go is running
 	fmt.Printf("🚀 Go WebAssembly Solver started for %s %s\n", month, day)

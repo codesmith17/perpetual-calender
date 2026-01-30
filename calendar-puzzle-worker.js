@@ -59,8 +59,17 @@ self.addEventListener('message', async (event) => {
         
         const startTime = Date.now();
         
-        // Call Go function (convert day to string)
-        const result = goSolvePuzzle(month, String(day));
+        // Progress callback for live updates
+        const progressCallback = function(count, solution) {
+            self.postMessage({
+                type: 'progress',
+                count: count,
+                solution: solution
+            });
+        };
+        
+        // Call Go function with callback (convert day to string)
+        const result = goSolvePuzzle(month, String(day), progressCallback);
         
         const endTime = Date.now();
         const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
@@ -73,15 +82,6 @@ self.addEventListener('message', async (event) => {
                 time: timeTaken
             });
         } else {
-            // Send progress update with first solution
-            if (result.count > 0) {
-                self.postMessage({
-                    type: 'progress',
-                    count: result.count,
-                    solution: result.solutions[0]
-                });
-            }
-            
             // Send final result
             self.postMessage({
                 type: 'complete',

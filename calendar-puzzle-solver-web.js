@@ -260,12 +260,21 @@ function solvePuzzleUI(month, day) {
 
     if (type === 'started') {
       showStatus('🔄 Finding solutions...', 'solving');
+      allSolutions = [];
+      currentSolutionIndex = 0;
+      hideSolutionNavigation();
     }
     else if (type === 'progress') {
-      // Real-time progress updates
+      // Real-time progress updates - display each solution as found
+      allSolutions.push(solution);
+      
+      // Show first solution immediately
       if (count === 1) {
         renderBoard(solution);
+        currentSolutionIndex = 0;
       }
+      
+      // Update status with current count
       showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
     }
     else if (type === 'complete') {
@@ -278,7 +287,13 @@ function solvePuzzleUI(month, day) {
         
         // Save all solutions to cache
         saveSolutionToCache(month, day, solutions, time);
-        renderBoard(solutions[0]);
+        
+        // Display first solution if not already shown
+        if (solutions.length > 0) {
+          renderBoard(solutions[0]);
+        }
+        
+        // Show navigation only when all solutions are found
         updateSolutionNavigation(solutions.length, time);
         showStatus(`✅ Found ${solutions.length} solution${solutions.length > 1 ? 's' : ''} in ${time}s!`, 'success');
       } else {
