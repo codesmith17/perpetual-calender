@@ -59,8 +59,8 @@ self.addEventListener('message', async (event) => {
         
         const startTime = Date.now();
         
-        // Call Go function
-        const result = goSolvePuzzle(month, day);
+        // Call Go function (convert day to string)
+        const result = goSolvePuzzle(month, String(day));
         
         const endTime = Date.now();
         const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
