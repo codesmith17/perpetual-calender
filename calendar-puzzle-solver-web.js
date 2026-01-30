@@ -362,8 +362,7 @@ function solvePuzzleUI(month, day) {
       currentSolutionIndex = 0;
       renderBoard(allSolutions[0]);
       updateSolutionNavigation(cachedData.count, cachedData.time);
-      const maxNote = cachedData.count >= MAX_SOLUTIONS ? '+' : '';
-      showStatus(`✅ Found ${cachedData.count}${maxNote} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
+      showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
     }, 200);
     return;
   }
@@ -387,8 +386,7 @@ function solvePuzzleUI(month, day) {
       }
       
       // Update status with current count
-      const maxNote = count >= MAX_SOLUTIONS ? '+' : '';
-      showStatus(`🔍 Found ${count}${maxNote} solution${count > 1 ? 's' : ''}...`, 'solving');
+      showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
     };
     
     solve(grid, used, allSolutions, onSolutionFound);
@@ -403,8 +401,7 @@ function solvePuzzleUI(month, day) {
       saveSolutionToCache(month, day, allSolutions, timeTaken);
       renderBoard(allSolutions[0]);
       updateSolutionNavigation(allSolutions.length, timeTaken);
-      const maxNote = allSolutions.length >= MAX_SOLUTIONS ? '+' : '';
-      showStatus(`✅ Found ${allSolutions.length}${maxNote} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
+      showStatus(`✅ Found ${allSolutions.length} solution${allSolutions.length > 1 ? 's' : ''} in ${timeTaken}s!`, 'success');
     } else {
       renderBoard(initGrid(month, day));
       showStatus(`❌ No solution found (searched for ${timeTaken} seconds)`, 'error');
@@ -418,18 +415,16 @@ function updateSolutionNavigation(count, time) {
   const counterElement = document.getElementById('solutionCounter');
   const timeElement = document.getElementById('solveTime');
   
-  const maxNote = count >= MAX_SOLUTIONS ? '+' : '';
-  
   if (count > 1) {
     navElement.style.display = 'flex';
-    counterElement.textContent = `Solution ${currentSolutionIndex + 1} of ${count}${maxNote}`;
+    counterElement.textContent = `Solution ${currentSolutionIndex + 1} of ${count}`;
   } else {
     navElement.style.display = 'none';
   }
   
   timeElement.style.display = 'block';
   const timeContent = timeElement.querySelector('span');
-  timeContent.textContent = `⏱️ Solved in ${time}s • ${count}${maxNote} solution${count > 1 ? 's' : ''} found`;
+  timeContent.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
 }
 
 function hideSolutionNavigation() {
