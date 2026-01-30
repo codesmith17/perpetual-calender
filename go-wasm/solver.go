@@ -160,18 +160,21 @@ func copyGrid(grid [][]int) [][]int {
 	return newGrid
 }
 
-const allPiecesMask = (1 << 8) - 1 // 255 for 8 pieces
+const (
+	allPiecesMask = (1 << 8) - 1 // 255 for 8 pieces
+	maxSolutions  = 10             // Find up to 10 solutions
+)
 
-func solve(grid [][]int, usedMask int, solutions *[][][]int) bool {
-	// Stop if we already found a solution
-	if len(*solutions) > 0 {
-		return true
+func solve(grid [][]int, usedMask int, solutions *[][][]int) {
+	// Stop if we found enough solutions
+	if len(*solutions) >= maxSolutions {
+		return
 	}
 	
 	// Check if all pieces are used
 	if usedMask == allPiecesMask {
 		*solutions = append(*solutions, copyGrid(grid))
-		return true
+		return
 	}
 
 	// Find first unused piece
@@ -181,20 +184,25 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) bool {
 	}
 
 	for _, shape := range transformedPieces[pieceIndex] {
+		if len(*solutions) >= maxSolutions {
+			return
+		}
+		
 		for r := 0; r < ROWS; r++ {
 			for c := 0; c < COLS; c++ {
 				if canPlace(grid, shape, r, c) {
 					place(grid, shape, r, c, pieceIndex+1)
 					newUsedMask := usedMask | (1 << pieceIndex)
-					if solve(grid, newUsedMask, solutions) {
-						return true
-					}
+					solve(grid, newUsedMask, solutions)
 					remove(grid, shape, r, c)
+					
+					if len(*solutions) >= maxSolutions {
+						return
+					}
 				}
 			}
 		}
 	}
-	return false
 }
 
 // WebAssembly bridge function
@@ -208,11 +216,18 @@ func solvePuzzle(this js.Value, args []js.Value) interface{} {
 	month := args[0].String()
 	day := args[1].String()
 
+	// Console logs to show Go is running
+	fmt.Printf("🚀 Go WebAssembly Solver started for %s %s\n", month, day)
+	
 	startTime := time.Now()
 	grid := initGrid(month, day)
 	solutions := make([][][]int, 0)
+	
+	fmt.Println("🔍 Searching for solutions...")
 	solve(grid, 0, &solutions)
+	
 	elapsed := time.Since(startTime).Seconds()
+	fmt.Printf("✅ Go found %d solution(s) in %.3f seconds\n", len(solutions), elapsed)
 
 	// Convert solutions to JS format
 	jsSolutions := make([]interface{}, len(solutions))
@@ -236,7 +251,8 @@ func solvePuzzle(this js.Value, args []js.Value) interface{} {
 }
 
 func main() {
-	fmt.Println("Go WebAssembly Calendar Puzzle Solver initialized")
+	fmt.Println("🎯 Go WebAssembly Calendar Puzzle Solver initialized!")
+	fmt.Println("⚡ Powered by Go - Finding up to 10 solutions per date")
 	
 	// Register the function to be callable from JavaScript
 	js.Global().Set("goSolvePuzzle", js.FuncOf(solvePuzzle))
