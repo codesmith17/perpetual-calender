@@ -188,6 +188,11 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 	if usedMask == allPiecesMask {
 		// Check for duplicate solution
 		gridStr := gridToString(grid)
+		
+		fmt.Printf("\n🔍 Found solution, checking uniqueness...\n")
+		fmt.Printf("   Grid hash: %s\n", gridStr[:50]+"...") // Show first 50 chars
+		fmt.Printf("   Already in set: %v\n", solutionSet[gridStr])
+		
 		if solutionSet[gridStr] {
 			fmt.Println("⚠️  Skipping duplicate solution")
 			return // Skip duplicate
@@ -198,7 +203,7 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 		*solutions = append(*solutions, gridCopy)
 		
 		// Log the grid for debugging
-		fmt.Printf("\n✅ Solution #%d:\n", len(*solutions))
+		fmt.Printf("\n✅ Unique solution #%d added:\n", len(*solutions))
 		for _, row := range gridCopy {
 			fmt.Printf("  %v\n", row)
 		}
@@ -206,7 +211,7 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 		// Send progress update if callback is provided
 		if !progressCallback.IsUndefined() {
 			count := len(*solutions)
-			fmt.Printf("📊 Found unique solution %d/%d\n", count, maxSolutions)
+			fmt.Printf("📊 Sending to UI: solution %d/%d\n", count, maxSolutions)
 			
 			// Convert grid to JS format
 			jsGrid := make([]interface{}, len(gridCopy))

@@ -203,38 +203,6 @@ function showStatus(message, type) {
   statusElement.className = `status ${type}`;
 }
 
-function addSolutionToDebug(count, solution) {
-  const debugDisplay = document.getElementById('debugDisplay');
-  const debugContent = document.getElementById('debugContent');
-  
-  // Show debug display
-  debugDisplay.style.display = 'block';
-  
-  // Clear on first solution
-  if (count === 1) {
-    debugContent.innerHTML = '';
-  }
-  
-  // Add solution data
-  const solutionDiv = document.createElement('div');
-  solutionDiv.style.marginBottom = '15px';
-  solutionDiv.style.padding = '10px';
-  solutionDiv.style.background = 'white';
-  solutionDiv.style.borderRadius = '5px';
-  solutionDiv.style.borderLeft = '3px solid #667eea';
-  
-  let html = `<strong>Solution #${count}:</strong><br>`;
-  for (let row of solution) {
-    html += `[${row.map(v => v.toString().padStart(2, ' ')).join(', ')}]<br>`;
-  }
-  
-  solutionDiv.innerHTML = html;
-  debugContent.appendChild(solutionDiv);
-  
-  // Auto scroll to bottom
-  debugContent.scrollTop = debugContent.scrollHeight;
-}
-
 // Web Worker for background computation
 let puzzleWorker = null;
 
@@ -295,10 +263,6 @@ function solvePuzzleUI(month, day) {
       allSolutions = [];
       currentSolutionIndex = 0;
       hideSolutionNavigation();
-      
-      // Clear debug display
-      const debugContent = document.getElementById('debugContent');
-      if (debugContent) debugContent.innerHTML = '';
     }
     else if (type === 'progress') {
       // Real-time progress updates - display each solution as found
@@ -310,8 +274,8 @@ function solvePuzzleUI(month, day) {
         currentSolutionIndex = 0;
       }
       
-      // Add to debug display
-      addSolutionToDebug(count, solution);
+      // Console log for debugging
+      console.log(`Solution #${count}:`, solution);
       
       // Update status with current count
       showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
