@@ -82,19 +82,26 @@ function remove(grid, shape, r, c) {
   }
 }
 
-function serialize(grid, used) {
-  return grid.flat().join(",") + "|" + used.join("");
+// Optimized memoization with object (faster than Map on phones)
+let memo = {};
+let memoSize = 0;
+const MAX_MEMO_SIZE = 100000; // Limit memo to prevent memory explosion
+
+function serializeState(grid, usedMask) {
+  // Flatten grid and combine with bitmask for fast key
+  return grid.flat().join(',') + '|' + usedMask;
 }
 
 // Backtracking solver - find up to MAX_SOLUTIONS
 const MAX_SOLUTIONS = 10;
+const ALL_PIECES_MASK = (1 << rawPieces.length) - 1; // 255 for 8 pieces
 
-function solve(grid, used, solutions = [], onSolutionFound = null) {
+function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
   // Stop if we found enough solutions
   if (solutions.length >= MAX_SOLUTIONS) return;
   
-  // Check if all pieces are used
-  if (used.every(v => v)) {
+  // Check if all pieces are used (bitmask comparison - O(1))
+  if (usedMask === ALL_PIECES_MASK) {
     // Found a solution! Save a copy
     const solutionCopy = grid.map(row => [...row]);
     solutions.push(solutionCopy);
@@ -107,8 +114,15 @@ function solve(grid, used, solutions = [], onSolutionFound = null) {
     return; // Continue searching for more solutions
   }
 
-  // Try to place the next unused piece
-  const pieceIndex = used.findIndex(v => !v);
+  // Check memoization - O(1) object lookup
+  const stateKey = serializeState(grid, usedMask);
+  if (memo[stateKey]) return;
+
+  // Find first unused piece using bitmask - O(n) but n=8
+  let pieceIndex = 0;
+  while (pieceIndex < rawPieces.length && (usedMask & (1 << pieceIndex))) {
+    pieceIndex++;
+  }
 
   for (let shape of transformedPieces[pieceIndex]) {
     // Early exit if we have enough solutions
@@ -118,11 +132,12 @@ function solve(grid, used, solutions = [], onSolutionFound = null) {
       for (let c = 0; c < COLS; c++) {
         if (canPlace(grid, shape, r, c)) {
           place(grid, shape, r, c, pieceIndex + 1);
-          used[pieceIndex] = true;
+          
+          // Set bit for this piece (much faster than array) - O(1)
+          const newUsedMask = usedMask | (1 << pieceIndex);
 
-          solve(grid, used, solutions, onSolutionFound); // Recursive call with callback
+          solve(grid, newUsedMask, solutions, onSolutionFound); // Recursive call
 
-          used[pieceIndex] = false;
           remove(grid, shape, r, c);
           
           // Early exit check
@@ -130,6 +145,12 @@ function solve(grid, used, solutions = [], onSolutionFound = null) {
         }
       }
     }
+  }
+
+  // Add to memo only if size is under limit
+  if (memoSize < MAX_MEMO_SIZE) {
+    memo[stateKey] = true;
+    memoSize++;
   }
 }
 
@@ -369,10 +390,14 @@ function solvePuzzleUI(month, day) {
 
   showStatus('🔄 Finding solutions...', 'solving');
 
+  // Clear memoization for fresh solve
+  memo = {};
+  memoSize = 0;
+  
   allSolutions = [];
   currentSolutionIndex = 0;
-  // Reuse the grid we already created and rendered
-  const used = Array(rawPieces.length).fill(false);
+  // Start with bitmask 0 (no pieces used)
+  const usedMask = 0;
 
   const startTime = Date.now();
 
@@ -389,7 +414,7 @@ function solvePuzzleUI(month, day) {
       showStatus(`🔍 Found ${count} solution${count > 1 ? 's' : ''}...`, 'solving');
     };
     
-    solve(grid, used, allSolutions, onSolutionFound);
+    solve(grid, usedMask, allSolutions, onSolutionFound);
     const endTime = Date.now();
     const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
 
