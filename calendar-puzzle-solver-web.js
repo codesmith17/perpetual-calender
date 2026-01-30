@@ -2,6 +2,14 @@
 // PERPETUAL CALENDAR PUZZLE SOLVER - WEB VERSION
 // ============================================
 
+// Suppress browser extension errors (not our code!)
+window.addEventListener('error', function(event) {
+  if (event.message && event.message.includes('message channel closed')) {
+    event.preventDefault();
+    return true;
+  }
+}, true);
+
 const ROWS = 7;
 const COLS = 7;
 
@@ -383,7 +391,14 @@ function solvePuzzleUI(month, day) {
   }
 
   // Create new Web Worker
-  puzzleWorker = new Worker('calendar-puzzle-worker.js');
+  try {
+    puzzleWorker = new Worker('calendar-puzzle-worker.js');
+  } catch (error) {
+    console.error('Failed to create worker:', error);
+    boardElement.classList.remove('solving');
+    showStatus('❌ Failed to start solver. Please refresh the page.', 'error');
+    return;
+  }
 
   // Listen for messages from worker
   puzzleWorker.onmessage = function(event) {
@@ -591,4 +606,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize hover listeners
   attachLegendHoverListeners();
+
+  // Success message
+  console.log('%c✅ Puzzle Solver Loaded Successfully!', 'color: #4ec9b0; font-size: 14px; font-weight: bold;');
+  console.log('%cℹ️ Note: Any "message channel closed" errors are from browser extensions, not this app.', 'color: #8b6f47; font-size: 12px;');
 });
