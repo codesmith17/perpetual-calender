@@ -176,9 +176,7 @@ func gridToString(grid [][]int) string {
 	return result
 }
 
-var solutionSet map[string]bool
-
-func solve(grid [][]int, usedMask int, solutions *[][][]int) {
+func solve(grid [][]int, usedMask int, solutions *[][][]int, solutionSet map[string]bool) {
 	// Stop if we found enough solutions
 	if len(*solutions) >= maxSolutions {
 		return
@@ -246,7 +244,7 @@ func solve(grid [][]int, usedMask int, solutions *[][][]int) {
 				if canPlace(grid, shape, r, c) {
 					place(grid, shape, r, c, pieceIndex+1)
 					newUsedMask := usedMask | (1 << pieceIndex)
-					solve(grid, newUsedMask, solutions)
+					solve(grid, newUsedMask, solutions, solutionSet)
 					remove(grid, shape, r, c)
 					
 					if len(*solutions) >= maxSolutions {
@@ -285,10 +283,10 @@ func solvePuzzle(this js.Value, args []js.Value) interface{} {
 	solutions := make([][][]int, 0)
 	
 	// Initialize solution set for deduplication
-	solutionSet = make(map[string]bool)
+	solutionSet := make(map[string]bool)
 	
 	fmt.Println("🔍 Searching for unique solutions...")
-	solve(grid, 0, &solutions)
+	solve(grid, 0, &solutions, solutionSet)
 	
 	elapsed := time.Since(startTime).Seconds()
 	fmt.Printf("✅ Go found %d solution(s) in %.3f seconds\n", len(solutions), elapsed)
