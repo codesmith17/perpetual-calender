@@ -69,7 +69,6 @@ function saveSolutionToCache(month, day, solutions, timeTaken) {
 function clearCache() {
   try {
     localStorage.removeItem(CACHE_KEY);
-    console.log('Cache cleared successfully');
     // Force page reload to start fresh
     window.location.reload();
   } catch (e) {
@@ -382,7 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
   try {
     const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
     if (cache.version && cache.version !== CACHE_VERSION) {
-      console.log('Clearing old cache version:', cache.version);
       localStorage.removeItem(CACHE_KEY);
     }
   } catch (e) {
@@ -437,8 +435,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize hover listeners
   attachLegendHoverListeners();
-
-  // Success message
-  console.log('%c✅ Puzzle Solver Loaded Successfully!', 'color: #4ec9b0; font-size: 14px; font-weight: bold;');
-  console.log('%cℹ️ Note: Any "message channel closed" errors are from browser extensions, not this app.', 'color: #8b6f47; font-size: 12px;');
 });
