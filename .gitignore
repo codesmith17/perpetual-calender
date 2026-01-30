@@ -1,9 +1,9 @@
-# WebAssembly compiled files (generated from go-wasm/)
-solver.wasm
-solver-tiny.wasm
+# WebAssembly compiled files in go-wasm/ (build artifacts)
+go-wasm/solver.wasm
+go-wasm/solver-tiny.wasm
+go-wasm/wasm_exec.js
 
-# Go WASM support file (copied from Go installation)
-wasm_exec.js
+# Note: Root solver.wasm and wasm_exec.js are kept in git for GitHub Pages deployment
 
 # Node modules (if any)
 node_modules/
