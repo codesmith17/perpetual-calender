@@ -360,6 +360,17 @@
             50% { opacity: 1; }
         }
 
+        /* Rotating emoji animation */
+        .status.solving::first-letter {
+            display: inline-block;
+            animation: spin-emoji 1s linear infinite;
+        }
+
+        @keyframes spin-emoji {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .status.success {
             background: linear-gradient(135deg, rgba(232, 245, 233, 0.95) 0%, rgba(200, 230, 201, 0.95) 100%);
             color: #2d5016;
@@ -948,6 +959,6 @@
         </div>
     </div>
 
-    <script src="calendar-puzzle-solver-web.js?v=7"></script>
+    <script src="calendar-puzzle-solver-web.js?v=9"></script>
 </body>
 </html>

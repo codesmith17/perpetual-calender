@@ -340,6 +340,10 @@ function showStatus(message, type) {
 }
 
 function solvePuzzleUI(month, day) {
+  // Reset board immediately to show the new target date
+  const grid = initGrid(month, day);
+  renderBoard(grid);
+  
   // Always show solving status first
   showStatus('🔄 Checking solutions...', 'solving');
   hideSolutionNavigation();
@@ -368,7 +372,7 @@ function solvePuzzleUI(month, day) {
 
   allSolutions = [];
   currentSolutionIndex = 0;
-  const grid = initGrid(month, day);
+  // Reuse the grid we already created and rendered
   const used = Array(rawPieces.length).fill(false);
 
   const startTime = Date.now();
