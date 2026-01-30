@@ -177,6 +177,49 @@
             transform: translateY(-1px);
         }
 
+        .algo-btn {
+            display: inline-block;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .algo-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .algo-btn:hover::before {
+            left: 100%;
+        }
+
+        .algo-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .algo-btn:active {
+            transform: translateY(-1px);
+        }
+
         .board-container {
             display: flex;
             justify-content: center;
@@ -712,7 +755,7 @@
                 -webkit-tap-highlight-color: transparent;
             }
 
-            button {
+            button, .algo-btn {
                 padding: 11px 20px;
                 font-size: 14px;
                 flex: 1 1 auto;
@@ -914,6 +957,7 @@
 
             <button id="solveBtn">🔍 Solve Puzzle</button>
             <button id="todayBtn">📅 Today's Date</button>
+            <a href="algorithm.html" class="algo-btn">🧠 How Does It Work?</a>
         </div>
 
         <div id="status"></div>
@@ -1026,6 +1070,6 @@
     </div>
 
     <script src="puzzle-core.js"></script>
-    <script src="calendar-puzzle-solver-web.js?v=18"></script>
+    <script src="calendar-puzzle-solver-web.js?v=19"></script>
 </body>
 </html>
