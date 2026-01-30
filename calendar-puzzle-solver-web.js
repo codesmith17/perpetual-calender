@@ -1,5 +1,6 @@
 // ============================================
 // PERPETUAL CALENDAR PUZZLE SOLVER - WEB VERSION
+// Main thread UI logic only (core logic in puzzle-core.js)
 // ============================================
 
 // Suppress browser extension errors (not our code!)
@@ -10,153 +11,7 @@ window.addEventListener('error', function(event) {
   }
 }, true);
 
-const ROWS = 7;
-const COLS = 7;
-
-const boardLayout = [
-  ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", null],
-  ["JUL", "AUG", "SEP", "OCT", "NOV", "DEC", null],
-  ["1", "2", "3", "4", "5", "6", "7"],
-  ["8", "9", "10", "11", "12", "13", "14"],
-  ["15", "16", "17", "18", "19", "20", "21"],
-  ["22", "23", "24", "25", "26", "27", "28"],
-  ["29", "30", "31", null, null, null, null]
-];
-
-const rawPieces = [
-  [[0, 1], [0, 2], [1, 1], [2, 0], [2, 1]],      // Piece 1 - Purple
-  [[0, 0], [1, 0], [1, 1], [1, 2], [0, 2]],      // Piece 2 - Cyan U
-  [[0, 0], [1, 0], [2, 0], [1, 1], [2, 1]],      // Piece 3 - Blue chunky L
-  [[0, 1], [1, 1], [2, 0], [2, 1], [3, 1]],      // Piece 4 - Green tall
-  [[0, 0], [1, 0], [2, 0], [2, 1], [2, 2]],      // Piece 5 - Big L
-  [[0, 0], [1, 0], [2, 0], [2, 1], [3, 1]],      // Piece 6 - Peach zig L
-  [[0, 0], [1, 0], [2, 0], [3, 0], [3, 1]],      // Piece 7 - Light blue long L
-  [[0, 0], [0, 1], [1, 0], [1, 1], [2, 0], [2, 1]] // Piece 8 - Pink double bar
-];
-
-// Rotation and transformation functions
-function rotate(shape) {
-  return shape.map(([r, c]) => [c, -r]);
-}
-
-function normalize(shape) {
-  const minR = Math.min(...shape.map(p => p[0]));
-  const minC = Math.min(...shape.map(p => p[1]));
-  return shape
-    .map(([r, c]) => [r - minR, c - minC])
-    .sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
-}
-
-function getTransforms(shape) {
-  const forms = new Set();
-  let s = shape;
-
-  for (let i = 0; i < 4; i++) {
-    s = rotate(s);
-    const norm = normalize(s);
-    forms.add(JSON.stringify(norm));
-
-    const flipped = norm.map(([r, c]) => [r, -c]);
-    forms.add(JSON.stringify(normalize(flipped)));
-  }
-
-  return [...forms].map(f => JSON.parse(f));
-}
-
-const transformedPieces = rawPieces.map(getTransforms);
-
-// Grid manipulation functions
-function canPlace(grid, shape, r, c) {
-  for (let [dr, dc] of shape) {
-    const nr = r + dr;
-    const nc = c + dc;
-
-    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) return false;
-    if (boardLayout[nr][nc] === null) return false;
-    if (grid[nr][nc] !== 0) return false;
-  }
-  return true;
-}
-
-function place(grid, shape, r, c, pieceId) {
-  for (let [dr, dc] of shape) {
-    grid[r + dr][c + dc] = pieceId;
-  }
-}
-
-function remove(grid, shape, r, c) {
-  for (let [dr, dc] of shape) {
-    grid[r + dr][c + dc] = 0;
-  }
-}
-
-// Backtracking solver - find up to MAX_SOLUTIONS
-// No memoization - for finding just 10 solutions, memo overhead > benefit
-const MAX_SOLUTIONS = 10;
-const ALL_PIECES_MASK = (1 << rawPieces.length) - 1; // 255 for 8 pieces
-
-function solve(grid, usedMask, solutions = [], onSolutionFound = null) {
-  // Stop if we found enough solutions
-  if (solutions.length >= MAX_SOLUTIONS) return;
-  
-  // Check if all pieces are used (bitmask comparison - O(1))
-  if (usedMask === ALL_PIECES_MASK) {
-    // Found a solution! Save a copy
-    const solutionCopy = grid.map(row => [...row]);
-    solutions.push(solutionCopy);
-    
-    // Call the callback to update UI
-    if (onSolutionFound) {
-      onSolutionFound(solutions.length, solutionCopy);
-    }
-    
-    return; // Continue searching for more solutions
-  }
-
-  // Find first unused piece using bitmask - O(n) but n=8
-  let pieceIndex = 0;
-  while (pieceIndex < rawPieces.length && (usedMask & (1 << pieceIndex))) {
-    pieceIndex++;
-  }
-
-  for (let shape of transformedPieces[pieceIndex]) {
-    // Early exit if we have enough solutions
-    if (solutions.length >= MAX_SOLUTIONS) return;
-    
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) {
-        if (canPlace(grid, shape, r, c)) {
-          place(grid, shape, r, c, pieceIndex + 1);
-          
-          // Set bit for this piece (much faster than array) - O(1)
-          const newUsedMask = usedMask | (1 << pieceIndex);
-
-          solve(grid, newUsedMask, solutions, onSolutionFound); // Recursive call
-
-          remove(grid, shape, r, c);
-          
-          // Early exit check
-          if (solutions.length >= MAX_SOLUTIONS) return;
-        }
-      }
-    }
-  }
-}
-
-function initGrid(month, day) {
-  const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const cell = boardLayout[r][c];
-      if (cell === month || cell === String(day)) {
-        grid[r][c] = -1;
-      }
-    }
-  }
-
-  return grid;
-}
+// Note: Core puzzle logic (board, pieces, solver) loaded from puzzle-core.js via script tag
 
 // ============================================
 // LOCALSTORAGE CACHING
@@ -498,31 +353,7 @@ function showPreviousSolution() {
 // INITIALIZATION
 // ============================================
 
-// Get days in month
-function getDaysInMonth(month, year = new Date().getFullYear()) {
-  const daysMap = {
-    'JAN': 31, 
-    'FEB': isLeapYear(year) ? 29 : 28, 
-    'MAR': 31, 
-    'APR': 30,
-    'MAY': 31, 
-    'JUN': 30, 
-    'JUL': 31, 
-    'AUG': 31,
-    'SEP': 30, 
-    'OCT': 31, 
-    'NOV': 30, 
-    'DEC': 31
-  };
-  return daysMap[month] || 31;
-}
-
-function isLeapYear(year) {
-  // A year is a leap year if:
-  // - It's divisible by 4 AND
-  // - Either it's NOT divisible by 100 OR it IS divisible by 400
-  return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
-}
+// Note: getDaysInMonth and isLeapYear now loaded from puzzle-core.js
 
 function updateDayOptions(month) {
   const daySelect = document.getElementById('daySelect');
