@@ -253,19 +253,8 @@ async function solvePuzzleUI(month, day) {
     showStatus(`✅ ${allSolutions.length} solutions loaded instantly!`, 'success');
     return;
   }
-  
-  // Check cache
-  const cachedData = getCachedSolution(month, day);
-  if (cachedData && cachedData.solutions && cachedData.solutions.length > 0) {
-    boardElement.classList.remove('solving');
-    allSolutions = cachedData.solutions;
-    currentSolutionIndex = 0;
-    renderBoard(allSolutions[0]);
-    updateSolutionNavigation(cachedData.count, cachedData.time);
-    showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}! (cached)`, 'success');
-    return;
-  }
 
+  // JSON failed, fallback to WASM (max 10 solutions)
   showStatus('🔄 Computing with WASM (max 10 solutions)...', 'solving');
   
   allSolutions = [];
@@ -319,9 +308,6 @@ async function solvePuzzleUI(month, day) {
       if (solutions.length > 0) {
         allSolutions = solutions;
         currentSolutionIndex = 0;
-        
-        // Save all solutions to cache
-        saveSolutionToCache(month, day, solutions, time);
         
         // Display first solution if not already shown
         if (solutions.length > 0) {
@@ -427,16 +413,6 @@ function updateDayOptions(month) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Clear old cache on first load if needed
-  try {
-    const cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {};
-    if (cache.version && cache.version !== CACHE_VERSION) {
-      localStorage.removeItem(CACHE_KEY);
-    }
-  } catch (e) {
-    localStorage.removeItem(CACHE_KEY);
-  }
-  
   // Populate day select based on current month
   const monthSelect = document.getElementById('monthSelect');
   const daySelect = document.getElementById('daySelect');
