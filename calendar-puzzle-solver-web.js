@@ -250,7 +250,7 @@ async function solvePuzzleUI(month, day) {
     currentSolutionIndex = 0;
     renderBoard(allSolutions[0]);
     updateSolutionNavigation(allSolutions.length, jsonResult.time);
-    showStatus(`✅ ${allSolutions.length} solutions loaded! (pre-computed)`, 'success');
+    showStatus(`✅ ${allSolutions.length} solutions loaded instantly! (pre-computed in ${jsonResult.time}s)`, 'success');
     return;
   }
   
@@ -370,7 +370,7 @@ function updateSolutionNavigation(count, time) {
   
   timeElement.style.display = 'block';
   const timeContent = timeElement.querySelector('span');
-  timeContent.textContent = `⏱️ Solved in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
+  timeContent.textContent = `⏱️ Pre-computed in ${time}s • ${count} solution${count > 1 ? 's' : ''} found`;
 }
 
 function hideSolutionNavigation() {
