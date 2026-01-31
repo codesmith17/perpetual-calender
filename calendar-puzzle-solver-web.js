@@ -250,7 +250,7 @@ async function solvePuzzleUI(month, day) {
     currentSolutionIndex = 0;
     renderBoard(allSolutions[0]);
     updateSolutionNavigation(allSolutions.length, jsonResult.time);
-    showStatus(`✅ ${allSolutions.length} solutions loaded instantly! (pre-computed in ${jsonResult.time}s)`, 'success');
+    showStatus(`✅ ${allSolutions.length} solutions loaded instantly!`, 'success');
     return;
   }
   
