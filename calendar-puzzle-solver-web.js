@@ -206,35 +206,67 @@ function showStatus(message, type) {
 // Web Worker for background computation
 let puzzleWorker = null;
 
-function solvePuzzleUI(month, day) {
+// Load pre-computed solutions from JSON
+async function loadFromJSON(month, day) {
+  try {
+    const response = await fetch('all-solutions.json');
+    if (!response.ok) throw new Error('JSON not found');
+    
+    const data = await response.json();
+    const result = data.results.find(r => r.month === month && r.day === day);
+    
+    if (result && result.grids && result.grids.length > 0) {
+      return {
+        solutions: result.grids,
+        time: result.time.toFixed(3),
+        source: 'precomputed'
+      };
+    }
+    return null;
+  } catch (error) {
+    console.log('JSON fallback to WASM:', error.message);
+    return null;
+  }
+}
+
+async function solvePuzzleUI(month, day) {
   // Reset board immediately to show the new target date
   const grid = initGrid(month, day);
   renderBoard(grid);
   
   // Always show solving status first
-  showStatus('🔄 Checking solutions...', 'solving');
+  showStatus('🔄 Loading solutions...', 'solving');
   hideSolutionNavigation();
   
   // Add rotation animation to board
   const boardElement = document.getElementById('board');
   boardElement.classList.add('solving');
   
-  // Check cache first
+  // Try JSON first (all solutions)
+  const jsonResult = await loadFromJSON(month, day);
+  if (jsonResult) {
+    boardElement.classList.remove('solving');
+    allSolutions = jsonResult.solutions;
+    currentSolutionIndex = 0;
+    renderBoard(allSolutions[0]);
+    updateSolutionNavigation(allSolutions.length, jsonResult.time);
+    showStatus(`✅ ${allSolutions.length} solutions loaded! (pre-computed)`, 'success');
+    return;
+  }
+  
+  // Check cache
   const cachedData = getCachedSolution(month, day);
   if (cachedData && cachedData.solutions && cachedData.solutions.length > 0) {
-    // Small delay to show the solving message
-    setTimeout(() => {
-      boardElement.classList.remove('solving');
-      allSolutions = cachedData.solutions;
-      currentSolutionIndex = 0;
-      renderBoard(allSolutions[0]);
-      updateSolutionNavigation(cachedData.count, cachedData.time);
-      showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}!`, 'success');
-    }, 200);
+    boardElement.classList.remove('solving');
+    allSolutions = cachedData.solutions;
+    currentSolutionIndex = 0;
+    renderBoard(allSolutions[0]);
+    updateSolutionNavigation(cachedData.count, cachedData.time);
+    showStatus(`✅ Found ${cachedData.count} solution${cachedData.count > 1 ? 's' : ''}! (cached)`, 'success');
     return;
   }
 
-  showStatus('🔄 Finding solutions...', 'solving');
+  showStatus('🔄 Computing with WASM (max 10 solutions)...', 'solving');
   
   allSolutions = [];
   currentSolutionIndex = 0;
